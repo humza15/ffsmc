@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Suckmacock Hub</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Suckmacock">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1F3B2D">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<style>
+:root{
+  --turf:#1F3B2D; --turf2:#2B5240; --chalk:#F3F1E7; --card:#FFFFFF; --ink:#1C231E;
+  --mute:#6A7268; --line:#DAD7C7; --orange:#FF6B1A; --gold:#C99A2E;
+  --head:'Avenir Next Condensed','Arial Narrow','Roboto Condensed',sans-serif;
+  --body:-apple-system,'SF Pro Text','Helvetica Neue',Arial,sans-serif;
+  box-sizing:border-box;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){--chalk:#121A15;--card:#1B2620;--ink:#EDEBDD;--mute:#9AA595;--line:#2C3A31;}
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0}
+body{background:var(--chalk);color:var(--ink);font:16px/1.45 var(--body);display:flex;flex-direction:column;overflow:hidden}
+header{background:var(--turf);color:#fff;padding:calc(env(safe-area-inset-top,0px) + 10px) 18px 12px;
+  background-image:repeating-linear-gradient(90deg,transparent 0 46px,rgba(255,255,255,.06) 46px 48px)}
+header h1{font:800 34px/1 var(--head);letter-spacing:.5px;margin:0}
+header p{margin:2px 0 0;font-size:13px;color:#BFD3C6}
+main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px 16px 24px}
+section{display:none;max-width:640px;margin:0 auto}
+section.on{display:block}
+h2{font:700 24px/1.1 var(--head);margin:0 0 12px}
+h3{font:700 18px/1.2 var(--head);margin:0 0 4px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+.muted{color:var(--mute);font-size:13px}
+.champ{background:var(--turf);color:#fff;border:0;border-left:6px solid var(--gold)}
+.champ .muted{color:#BFD3C6}
+.champ b{font:800 28px/1.1 var(--head);display:block;margin-top:2px}
+.btn{display:block;width:100%;padding:14px;border:0;border-radius:12px;background:var(--orange);color:#fff;
+  font:700 17px var(--head);text-align:center;text-decoration:none;letter-spacing:.3px}
+.btn.alt{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.rank img{width:100%;border-radius:10px;display:block}
+.ph{aspect-ratio:4/3;border-radius:10px;border:2px dashed var(--line);display:grid;place-items:center;color:var(--mute);text-align:center;padding:16px;font-size:14px}
+.weeks{display:flex;gap:8px;overflow-x:auto;padding-bottom:10px;margin-bottom:6px}
+.weeks button{flex:none;border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:20px;padding:7px 14px;font:700 15px var(--head)}
+.weeks button.on{background:var(--turf);color:#fff;border-color:var(--turf)}
+.tx{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--line)}
+.tx:last-child{border:0}
+.tag{flex:none;min-width:58px;text-align:center;font:800 13px var(--head);letter-spacing:.6px;padding:4px 0;border-radius:6px;color:#fff}
+.ADD{background:#2E8B57}.DROP{background:#B23A2E}.TRADE{background:var(--gold)}.WAIVER{background:#3B6EA8}
+.badge{display:inline-block;font:700 12px var(--head);background:var(--gold);color:#1C231E;border-radius:6px;padding:2px 8px;margin-left:6px;vertical-align:middle}
+nav{display:flex;background:var(--card);border-top:1px solid var(--line);padding:6px 4px calc(env(safe-area-inset-bottom,0px) + 6px)}
+nav button{flex:1;background:none;border:0;color:var(--mute);font:700 12px var(--head);padding:6px 0;display:flex;flex-direction:column;align-items:center;gap:2px}
+nav button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+nav button.on{color:var(--orange)}
+#upd{display:none;position:fixed;left:12px;right:12px;top:calc(env(safe-area-inset-top,0px) + 8px);z-index:9;background:var(--orange);color:#fff;
+  border-radius:12px;padding:12px 14px;align-items:center;justify-content:space-between;gap:10px;box-shadow:0 6px 20px rgba(0,0,0,.3)}
+#upd.on{display:flex}
+#upd button{background:#fff;color:var(--orange);border:0;border-radius:8px;padding:8px 14px;font:800 15px var(--head)}
+#zoom{display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:8;overflow:auto;padding:calc(env(safe-area-inset-top,0px) + 16px) 8px}
+#zoom.on{display:block}#zoom img{width:100%}
+.log li{margin-bottom:6px}
+.log{padding-left:18px;margin:6px 0 0}
+</style>
+</head>
+<body>
+<div id="upd"><span>A new version is ready.</span><button id="updBtn">Update</button></div>
+<div id="zoom"><img id="zoomImg" alt=""></div>
+
+<header><h1 id="lname">SUCKMACOCK</h1><p id="lsub">Fantasy football hub</p></header>
+
+<main>
+  <section id="home">
+    <div class="card champ" id="homeChamp"></div>
+    <h2>Latest power rankings</h2>
+    <div class="card rank" id="homeRank"></div>
+    <h2>Recent moves</h2>
+    <div class="card" id="homeTx"></div>
+    <a class="btn" id="homeEspn" target="_blank" rel="noopener">Open league in ESPN</a>
+  </section>
+
+  <section id="rankings">
+    <h2>Power rankings</h2>
+    <div class="weeks" id="weeks"></div>
+    <div class="card rank" id="rankView"></div>
+  </section>
+
+  <section id="history">
+    <h2>Champions corner</h2>
+    <div id="champs"></div>
+    <h2 style="margin-top:20px">League history</h2>
+    <div id="hist"></div>
+    <a class="btn alt" id="franchise" target="_blank" rel="noopener">Franchise statistics</a>
+  </section>
+
+  <section id="moves">
+    <h2>Transactions <span class="badge" id="txBadge">SAMPLE</span></h2>
+    <div class="card" id="txList"></div>
+    <p class="muted" id="txNote"></p>
+  </section>
+
+  <section id="espn">
+    <h2>ESPN</h2>
+    <div class="card">
+      <h3>League <span id="lid"></span></h3>
+      <p class="muted">Opens the ESPN Fantasy app if it is installed. Otherwise it opens the league in Safari.</p>
+      <a class="btn" id="espnOpen" target="_blank" rel="noopener">Open league</a>
+    </div>
+    <div class="card">
+      <button class="btn alt" id="copyId">Copy league ID</button>
+    </div>
+    <div class="card">
+      <h3>About this app</h3>
+      <p class="muted">Version <span id="ver"></span></p>
+      <ul class="log muted" id="changelog"></ul>
+      <button class="btn alt" id="checkUpd" style="margin-top:12px">Check for updates</button>
+      <p class="muted" id="updMsg"></p>
+    </div>
+  </section>
+</main>
+
+<nav id="tabs">
+  <button data-t="home" class="on"><svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8M5 10v10h5v-6h4v6h5V10"/></svg>Home</button>
+  <button data-t="rankings"><svg viewBox="0 0 24 24"><path d="M6 20V10M12 20V4M18 20v-7"/></svg>Rankings</button>
+  <button data-t="history"><svg viewBox="0 0 24 24"><path d="M8 4h8v5a4 4 0 0 1-8 0V4zM8 6H4v1a3 3 0 0 0 4 3M16 6h4v1a3 3 0 0 1-4 3M12 13v4M8 20h8"/></svg>History</button>
+  <button data-t="moves"><svg viewBox="0 0 24 24"><path d="M4 8h14l-3-3M20 16H6l3 3"/></svg>Moves</button>
+  <button data-t="espn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>ESPN</button>
+</nav>
+
+<script>
+const APP_VERSION = '0.1.0';
+const CHANGELOG = [
+  ['0.1.0', 'First release: rankings, champions corner, history, sample transactions, ESPN launcher, update prompts.']
+];
+const $ = id => document.getElementById(id);
+let D = null, TX = [], txLive = false;
+
+/* ---------- tabs ---------- */
+function go(t){
+  document.querySelectorAll('section').forEach(s => s.classList.toggle('on', s.id === t));
+  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.t === t));
+  $('tabs').dataset.cur = t; document.querySelector('main').scrollTop = 0;
+  try { localStorage.setItem('tab', t); } catch(e){}
+}
+$('tabs').addEventListener('click', e => { const b = e.target.closest('button'); if (b) go(b.dataset.t); });
+
+/* ---------- data ---------- */
+async function load(){
+  try { D = await (await fetch('data/league.json', {cache:'no-cache'})).json(); }
+  catch(e){ D = {name:'SUCKMACOCK', leagueId:'1944871', season:2025, teams:[], rankings:[], champions:[], history:[]}; }
+  render();
+  await loadTx();
+  renderTx();
+}
+const espnUrl = () => 'https://fantasy.espn.com/football/league?leagueId=' + D.leagueId;
+
+function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+function imgOrPlaceholder(r){
+  return `<img src="${esc(r.image)}" alt="${esc(r.caption)}" data-zoom="1" onerror="this.outerHTML='<div class=&quot;ph&quot;>Add ${esc(r.image)} to the rankings folder</div>'">`;
+}
+
+function render(){
+  $('lname').textContent = D.name;
+  $('lsub').textContent = D.season + ' season';
+  $('lid').textContent = '#' + D.leagueId;
+  ['homeEspn','espnOpen'].forEach(i => $(i).href = espnUrl());
+  $('franchise').href = D.franchiseStatsUrl || '#';
+
+  const champs = [...D.champions].sort((a,b) => b.year - a.year);
+  const c = champs[0];
+  $('homeChamp').innerHTML = c ? `<span class="muted">${c.year} champion</span><b>${esc(c.team)}</b><span class="muted">${esc(c.manager)}</span>` : '<span class="muted">No champion added yet</span>';
+  $('champs').innerHTML = champs.map(x => `<div class="card champ"><span class="muted">${x.year}</span><b>${esc(x.team)}</b><span class="muted">${esc(x.manager)} ${x.note ? '· ' + esc(x.note) : ''}</span></div>`).join('') || '<p class="muted">Add champions in data/league.json.</p>';
+  $('hist').innerHTML = D.history.map(h => `<div class="card"><h3>${esc(h.title)}</h3><p style="margin:0">${esc(h.body)}</p></div>`).join('') || '<p class="muted">Add seasons in data/league.json.</p>';
+
+  const rk = [...D.rankings].sort((a,b) => b.week - a.week);
+  $('homeRank').innerHTML = rk[0] ? `<p class="muted" style="margin-top:0">${esc(rk[0].caption)}</p>${imgOrPlaceholder(rk[0])}` : '<div class="ph">No rankings posted yet</div>';
+  $('weeks').innerHTML = rk.map((r,i) => `<button data-i="${i}" class="${i?'':'on'}">Week ${r.week}</button>`).join('');
+  const show = i => { $('rankView').innerHTML = rk[i] ? `<p class="muted" style="margin-top:0">${esc(rk[i].caption)} · ${esc(rk[i].date)}</p>${imgOrPlaceholder(rk[i])}` : '<div class="ph">No rankings posted yet</div>'; };
+  show(0);
+  $('weeks').onclick = e => { const b = e.target.closest('button'); if(!b) return;
+    document.querySelectorAll('#weeks button').forEach(x => x.classList.toggle('on', x === b)); show(+b.dataset.i); };
+
+  $('ver').textContent = APP_VERSION;
+  $('changelog').innerHTML = CHANGELOG.map(c => `<li><b>${c[0]}</b> ${esc(c[1])}</li>`).join('');
+  try { const t = localStorage.getItem('tab'); if (t) go(t); } catch(e){}
+}
+
+document.addEventListener('click', e => {
+  const im = e.target.closest('img[data-zoom]');
+  if (im){ $('zoomImg').src = im.src; $('zoom').classList.add('on'); }
+});
+$('zoom').onclick = () => $('zoom').classList.remove('on');
+
+/* ---------- transactions ---------- */
+// Tries live ESPN data through an optional proxy (see espnProxy in data/league.json).
+// Falls back to generated sample data seeded from the league ID.
+async function loadTx(){
+  if (D.espnProxy){
+    try {
+      const r = await fetch(`${D.espnProxy}?leagueId=${D.leagueId}&season=${D.season}`);
+      const j = await r.json();
+      if (Array.isArray(j) && j.length){ TX = j; txLive = true; return; }
+    } catch(e){}
+  }
+  TX = sampleTx(D.leagueId, D.teams);
+}
+function sampleTx(seed, teams){
+  let s = +seed; const rnd = () => (s = (s * 1664525 + 1013904223) % 4294967296) / 4294967296;
+  const pick = a => a[Math.floor(rnd() * a.length)];
+  const T = teams.length ? teams : Array.from({length:12}, (_,i) => 'Team ' + (i+1));
+  const P = ['Puka Nacua','Jahmyr Gibbs','Ja\u2019Marr Chase','Bijan Robinson','Amon-Ra St. Brown','Josh Allen','Trey McBride','Chuba Hubbard','Rome Odunze','Tucker Kraft','Jayden Daniels','Rashee Rice','Brian Thomas Jr.','Tyrone Tracy Jr.','Jauan Jennings'];
+  const kinds = ['ADD','DROP','TRADE','WAIVER'];
+  const now = Date.now();
+  return Array.from({length:14}, (_,i) => {
+    const kind = pick(kinds), a = pick(T); let b = pick(T); while (b === a) b = pick(T);
+    const p = pick(P), q = pick(P.filter(x => x !== p));
+    const text = kind === 'ADD' ? `${a} added ${p}` :
+                 kind === 'DROP' ? `${a} dropped ${p}` :
+                 kind === 'WAIVER' ? `${a} won ${p} on waivers` :
+                 `${a} traded ${p} to ${b} for ${q}`;
+    return {type:kind, text, ts: now - i * 3600e3 * (2 + Math.floor(rnd() * 9))};
+  });
+}
+function ago(ts){
+  const h = Math.max(1, Math.round((Date.now() - ts) / 3600e3));
+  return h < 24 ? h + 'h ago' : Math.round(h / 24) + 'd ago';
+}
+const txRow = t => `<div class="tx"><span class="tag ${t.type}">${t.type}</span><div>${esc(t.text)}<div class="muted">${ago(t.ts)}</div></div></div>`;
+function renderTx(){
+  $('txList').innerHTML = TX.map(txRow).join('');
+  $('homeTx').innerHTML = TX.slice(0,3).map(txRow).join('');
+  $('txBadge').style.display = txLive ? 'none' : '';
+  $('txNote').textContent = txLive ? 'Live from ESPN.' : 'Sample data for now. Live ESPN feed needs a small proxy (see README).';
+}
+
+/* ---------- misc ---------- */
+$('copyId').onclick = async () => {
+  try { await navigator.clipboard.writeText(D.leagueId); $('copyId').textContent = 'Copied'; }
+  catch(e){ $('copyId').textContent = 'League ID: ' + D.leagueId; }
+  setTimeout(() => $('copyId').textContent = 'Copy league ID', 1800);
+};
+
+/* ---------- updates ---------- */
+let reg = null;
+function offerUpdate(){ $('upd').classList.add('on'); }
+$('updBtn').onclick = () => { if (reg && reg.waiting) reg.waiting.postMessage('SKIP_WAITING'); else location.reload(); };
+$('checkUpd').onclick = async () => {
+  $('updMsg').textContent = 'Checking...';
+  try { if (reg) await reg.update(); } catch(e){}
+  setTimeout(() => { $('updMsg').textContent = (reg && reg.waiting) ? 'Update ready. Tap Update at the top.' : 'You are on the latest version.'; }, 1200);
+};
+if ('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').then(r => {
+    reg = r;
+    if (r.waiting && navigator.serviceWorker.controller) offerUpdate();
+    r.addEventListener('updatefound', () => {
+      const w = r.installing;
+      w && w.addEventListener('statechange', () => { if (w.state === 'installed' && navigator.serviceWorker.controller) offerUpdate(); });
+    });
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) r.update().catch(()=>{}); });
+  }).catch(()=>{});
+  let reloaded = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => { if (!reloaded){ reloaded = true; location.reload(); } });
+}
+load();
+</script>
+</body>
+</html>

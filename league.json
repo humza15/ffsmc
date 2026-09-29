@@ -1,0 +1,20 @@
+{
+  "name": "SUCKMACOCK",
+  "leagueId": "1944871",
+  "season": 2025,
+  "franchiseStatsUrl": "https://fantasy-franchise.com/nfl/espn/1944871/",
+  "teams": [
+    "Team 1", "Team 2", "Team 3", "Team 4", "Team 5", "Team 6",
+    "Team 7", "Team 8", "Team 9", "Team 10", "Team 11", "Team 12"
+  ],
+  "rankings": [
+    { "week": 6, "date": "2025-09-25", "image": "rankings/week-6.jpg", "caption": "Week 6 Power Rankings" }
+  ],
+  "champions": [
+    { "year": 2024, "team": "Add 2024 champion", "manager": "", "note": "Edit data/league.json" }
+  ],
+  "history": [
+    { "year": 2023, "title": "2023 season", "body": "Add the recap, standings, or a photo link here." }
+  ],
+  "espnProxy": ""
+}
