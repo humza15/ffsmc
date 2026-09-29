@@ -21,3 +21,18 @@ Transactions show sample data until `espnProxy` in `data/league.json` points to 
 ESPN blocks direct browser requests (CORS), and private leagues need your `espn_s2` and `SWID` cookies,
 so a small Cloudflare Worker holds them and returns JSON: `[{ "type": "ADD", "text": "...", "ts": 1760000000000 }]`.
 Never put those cookies in this repo.
+
+## Power rankings folder
+Upload images to `rankings/` named like `2026-week-04.jpg`. The app lists the folder through GitHub's API
+(auto-detected on `username.github.io/repo`; on a custom domain set `githubRepo` to `username/repo` in `data/league.json`).
+Home shows the newest name, the Rankings tab shows all.
+
+## ESPN Worker setup (worker/)
+1. Sign in to ESPN Fantasy on a computer browser, open developer tools > Application (or Storage) > Cookies > espn.com,
+   and copy the values of `espn_s2` and `SWID`.
+2. In Cloudflare (free account): Workers & Pages > Create > Worker. Paste `worker/worker.js`. Deploy.
+   Or use the CLI: `wrangler secret put ESPN_S2`, `wrangler secret put SWID`, `wrangler deploy`.
+3. In the Worker's Settings > Variables: add secrets `ESPN_S2` and `SWID`, plus text vars `LEAGUE_ID` = 1944871 and `ALLOW_ORIGIN` = `*`.
+4. Test in Safari: `YOUR-WORKER-URL/?view=teams&season=2026`, then `?debug=1` if anything looks off.
+5. Put the Worker URL in `espnProxy` in `data/league.json`. The SAMPLE badge disappears and team names fill the Game of the Week.
+Later, set `ALLOW_ORIGIN` to your Pages origin (for example `https://username.github.io`).

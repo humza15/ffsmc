@@ -1,0 +1,7 @@
+name = "suckmacock-espn"
+main = "worker.js"
+compatibility_date = "2025-01-01"
+
+[vars]
+LEAGUE_ID = "1944871"
+ALLOW_ORIGIN = "*"

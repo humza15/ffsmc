@@ -56,6 +56,19 @@ nav{display:flex;background:var(--card);border-top:1px solid var(--line);padding
 nav button{flex:1;background:none;border:0;color:var(--mute);font:700 12px var(--head);padding:6px 0;display:flex;flex-direction:column;align-items:center;gap:2px}
 nav button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 nav button.on{color:var(--orange)}
+.gotw{background:#161C18;color:#F3F1E7;border-radius:14px;padding:14px;margin-bottom:14px;border-left:6px solid var(--orange)}
+.gotw .hd{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+.gotw .hd b{font:800 22px/1 var(--head)}.gotw .hd span{color:#9AA595;font-size:13px}
+.gotw .vs{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;text-align:center}
+.gotw .gm{font:800 26px/1.05 var(--head)}.gotw .tm{font-size:13px;color:#BFD3C6;margin-top:2px}
+.gotw .x{font:700 15px var(--head);color:var(--orange)}
+.season{padding:0;overflow:hidden}
+.season .top{padding:14px;background:var(--turf);color:#fff;border-left:6px solid var(--gold)}
+.season .top .muted{color:#BFD3C6}.season .top b{display:block;font:800 26px/1.1 var(--head)}
+.season img{width:100%;max-height:260px;object-fit:cover;display:block}
+.season .bd{padding:14px}
+.season blockquote{margin:10px 0;padding-left:12px;border-left:3px solid var(--gold);font-style:italic;color:var(--mute)}
+.place{font-size:14px;margin:2px 0}
 #upd{display:none;position:fixed;left:12px;right:12px;top:calc(env(safe-area-inset-top,0px) + 8px);z-index:9;background:var(--orange);color:#fff;
   border-radius:12px;padding:12px 14px;align-items:center;justify-content:space-between;gap:10px;box-shadow:0 6px 20px rgba(0,0,0,.3)}
 #upd.on{display:flex}
@@ -74,6 +87,7 @@ nav button.on{color:var(--orange)}
 
 <main>
   <section id="home">
+    <div class="gotw" id="gotw"></div>
     <div class="card champ" id="homeChamp"></div>
     <h2>Latest power rankings</h2>
     <div class="card rank" id="homeRank"></div>
@@ -84,14 +98,12 @@ nav button.on{color:var(--orange)}
 
   <section id="rankings">
     <h2>Power rankings</h2>
-    <div class="weeks" id="weeks"></div>
-    <div class="card rank" id="rankView"></div>
+    <div id="rankView"></div>
   </section>
 
   <section id="history">
-    <h2>Champions corner</h2>
+    <h2>Champions Corner</h2>
     <div id="champs"></div>
-    <h2 style="margin-top:20px">League history</h2>
     <div id="hist"></div>
     <a class="btn alt" id="franchise" target="_blank" rel="noopener">Franchise statistics</a>
   </section>
@@ -131,12 +143,13 @@ nav button.on{color:var(--orange)}
 </nav>
 
 <script>
-const APP_VERSION = '0.1.0';
+const APP_VERSION = '0.2.0';
 const CHANGELOG = [
+  ['0.2.0', 'Rankings folder auto-loads, new Champions Corner, Game of the Week, ESPN feed support.'],
   ['0.1.0', 'First release: rankings, champions corner, history, sample transactions, ESPN launcher, update prompts.']
 ];
 const $ = id => document.getElementById(id);
-let D = null, TX = [], txLive = false;
+let D = null, TX = [], TEAMS = [], RK = [], txLive = false;
 
 /* ---------- tabs ---------- */
 function go(t){
@@ -150,10 +163,11 @@ $('tabs').addEventListener('click', e => { const b = e.target.closest('button');
 /* ---------- data ---------- */
 async function load(){
   try { D = await (await fetch('data/league.json', {cache:'no-cache'})).json(); }
-  catch(e){ D = {name:'SUCKMACOCK', leagueId:'1944871', season:2025, teams:[], rankings:[], champions:[], history:[]}; }
+  catch(e){ D = {name:'SUCKMACOCK', leagueId:'1944871', season:2026, week:4, teams:[], rankings:[], champions:[], history:[]}; }
   render();
-  await loadTx();
-  renderTx();
+  loadRankings().then(r => { RK = r; renderRankings(); });
+  loadTeams().then(renderGotw);
+  loadTx().then(renderTx);
 }
 const espnUrl = () => 'https://fantasy.espn.com/football/league?leagueId=' + D.leagueId;
 
@@ -165,24 +179,17 @@ function imgOrPlaceholder(r){
 
 function render(){
   $('lname').textContent = D.name;
-  $('lsub').textContent = D.season + ' season';
+  $('lsub').textContent = D.season + ' NFL Season - Week ' + D.week;
   $('lid').textContent = '#' + D.leagueId;
   ['homeEspn','espnOpen'].forEach(i => $(i).href = espnUrl());
   $('franchise').href = D.franchiseStatsUrl || '#';
 
   const champs = [...D.champions].sort((a,b) => b.year - a.year);
   const c = champs[0];
-  $('homeChamp').innerHTML = c ? `<span class="muted">${c.year} champion</span><b>${esc(c.team)}</b><span class="muted">${esc(c.manager)}</span>` : '<span class="muted">No champion added yet</span>';
-  $('champs').innerHTML = champs.map(x => `<div class="card champ"><span class="muted">${x.year}</span><b>${esc(x.team)}</b><span class="muted">${esc(x.manager)} ${x.note ? '· ' + esc(x.note) : ''}</span></div>`).join('') || '<p class="muted">Add champions in data/league.json.</p>';
-  $('hist').innerHTML = D.history.map(h => `<div class="card"><h3>${esc(h.title)}</h3><p style="margin:0">${esc(h.body)}</p></div>`).join('') || '<p class="muted">Add seasons in data/league.json.</p>';
-
-  const rk = [...D.rankings].sort((a,b) => b.week - a.week);
-  $('homeRank').innerHTML = rk[0] ? `<p class="muted" style="margin-top:0">${esc(rk[0].caption)}</p>${imgOrPlaceholder(rk[0])}` : '<div class="ph">No rankings posted yet</div>';
-  $('weeks').innerHTML = rk.map((r,i) => `<button data-i="${i}" class="${i?'':'on'}">Week ${r.week}</button>`).join('');
-  const show = i => { $('rankView').innerHTML = rk[i] ? `<p class="muted" style="margin-top:0">${esc(rk[i].caption)} · ${esc(rk[i].date)}</p>${imgOrPlaceholder(rk[i])}` : '<div class="ph">No rankings posted yet</div>'; };
-  show(0);
-  $('weeks').onclick = e => { const b = e.target.closest('button'); if(!b) return;
-    document.querySelectorAll('#weeks button').forEach(x => x.classList.toggle('on', x === b)); show(+b.dataset.i); };
+  $('homeChamp').innerHTML = c ? `<span class="muted">${c.year} champion</span><b>${esc(c.gm || c.team)}</b><span class="muted">${esc(c.gm ? c.team : '')}</span>` : '';
+  $('champs').innerHTML = champs.map(seasonCard).join('');
+  $('hist').innerHTML = D.history.length ? '<h2 style="margin-top:20px">League history</h2>' + D.history.map(h => `<div class="card"><h3>${esc(h.title)}</h3><p style="margin:0">${esc(h.body)}</p></div>`).join('') : '';
+  renderGotw();
 
   $('ver').textContent = APP_VERSION;
   $('changelog').innerHTML = CHANGELOG.map(c => `<li><b>${c[0]}</b> ${esc(c[1])}</li>`).join('');
@@ -195,13 +202,63 @@ document.addEventListener('click', e => {
 });
 $('zoom').onclick = () => $('zoom').classList.remove('on');
 
+/* ---------- champions, game of the week, rankings ---------- */
+function seasonCard(x){
+  const img = x.img ? `<img src="${esc(x.img)}" alt="" loading="lazy" onerror="this.remove()">` : '';
+  const sub = [x.gm && x.team ? 'GM ' + x.gm : '', x.record].filter(Boolean).join(', ');
+  const std = `https://fantasy.espn.com/football/league/standings?leagueId=${D.leagueId}&seasonId=${x.year}`;
+  return `<div class="card season"><div class="top"><span class="muted">${x.year} champion</span><b>${esc(x.team || x.gm)}</b>${sub ? `<span class="muted">${esc(sub)}</span>` : ''}</div>${img}<div class="bd">
+    <p style="margin:0 0 6px">${esc(x.recap || 'Recap coming soon.')}</p>
+    ${x.quote ? `<blockquote>${esc(x.quote)}</blockquote>` : ''}
+    ${x.second ? `<div class="place"><b>Runner-up</b> ${esc(x.second)}</div>` : ''}
+    ${x.third ? `<div class="place"><b>Third</b> ${esc(x.third)}</div>` : ''}
+    <a class="muted" href="${std}" target="_blank" rel="noopener">Full standings</a></div></div>`;
+}
+function renderGotw(){
+  const g = D.gameOfTheWeek;
+  if (!g){ $('gotw').style.display = 'none'; return; }
+  const side = m => {
+    const t = m.team || (TEAMS.find(x => (x.owner || '').toLowerCase().includes(m.gm.toLowerCase())) || {}).name || '';
+    return `<div><div class="gm">${esc(m.gm)}</div><div class="tm">${esc(t || 'Team name TBD')}</div></div>`;
+  };
+  $('gotw').style.display = '';
+  $('gotw').innerHTML = `<div class="hd"><b>Game of the Week</b><span>Week ${D.week}</span></div><div class="vs">${side(g.a)}<span class="x">vs</span>${side(g.b)}</div>${g.note ? `<p style="margin:10px 0 0;font-size:13px;color:#9AA595">${esc(g.note)}</p>` : ''}`;
+}
+async function loadTeams(){
+  if (!D.espnProxy) return [];
+  try { const j = await (await fetch(`${D.espnProxy}?view=teams&season=${D.season}`)).json(); if (Array.isArray(j)) TEAMS = j; } catch(e){}
+  return TEAMS;
+}
+const pretty = n => n.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+async function loadRankings(){
+  let repo = D.githubRepo, list = [];
+  if (!repo && location.hostname.endsWith('.github.io')) repo = location.hostname.split('.')[0] + '/' + location.pathname.split('/')[1];
+  if (repo){
+    try {
+      const r = await fetch(`https://api.github.com/repos/${repo}/contents/rankings`);
+      if (r.ok){
+        list = (await r.json()).filter(f => /\.(jpe?g|png|webp|heic)$/i.test(f.name)).map(f => ({name:f.name, image:'rankings/' + encodeURIComponent(f.name), caption:pretty(f.name)}));
+        try { localStorage.setItem('rk', JSON.stringify(list)); } catch(e){}
+      }
+    } catch(e){}
+  }
+  if (!list.length){ try { list = JSON.parse(localStorage.getItem('rk') || '[]'); } catch(e){} }
+  if (!list.length) list = D.rankings.map(r => ({name:r.image.split('/').pop(), image:r.image, caption:r.caption}));
+  return list.sort((a,b) => b.name.localeCompare(a.name, undefined, {numeric:true}));
+}
+function renderRankings(){
+  $('rankView').innerHTML = RK.map(r => `<div class="card rank"><p class="muted" style="margin-top:0">${esc(r.caption)}</p>${imgOrPlaceholder(r)}</div>`).join('')
+    || '<div class="card"><div class="ph">Upload images to the rankings folder</div></div>';
+  $('homeRank').innerHTML = RK[0] ? `<p class="muted" style="margin-top:0">${esc(RK[0].caption)}</p>${imgOrPlaceholder(RK[0])}` : '<div class="ph">No rankings posted yet</div>';
+}
+
 /* ---------- transactions ---------- */
 // Tries live ESPN data through an optional proxy (see espnProxy in data/league.json).
 // Falls back to generated sample data seeded from the league ID.
 async function loadTx(){
   if (D.espnProxy){
     try {
-      const r = await fetch(`${D.espnProxy}?leagueId=${D.leagueId}&season=${D.season}`);
+      const r = await fetch(`${D.espnProxy}?view=transactions&leagueId=${D.leagueId}&season=${D.season}`);
       const j = await r.json();
       if (Array.isArray(j) && j.length){ TX = j; txLive = true; return; }
     } catch(e){}

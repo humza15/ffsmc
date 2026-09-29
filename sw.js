@@ -1,5 +1,5 @@
 // Bump VERSION on every release. A changed sw.js is what makes phones detect an update.
-const VERSION = '0.1.0';
+const VERSION = '0.2.0';
 const CACHE = 'suckmacock-' + VERSION;
 const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'data/league.json',
   'icons/icon-192.png', 'icons/apple-touch-icon.png'];

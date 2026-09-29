@@ -1,20 +1,55 @@
 {
   "name": "SUCKMACOCK",
   "leagueId": "1944871",
-  "season": 2025,
+  "season": 2026,
+  "week": 4,
   "franchiseStatsUrl": "https://fantasy-franchise.com/nfl/espn/1944871/",
-  "teams": [
-    "Team 1", "Team 2", "Team 3", "Team 4", "Team 5", "Team 6",
-    "Team 7", "Team 8", "Team 9", "Team 10", "Team 11", "Team 12"
-  ],
-  "rankings": [
-    { "week": 6, "date": "2025-09-25", "image": "rankings/week-6.jpg", "caption": "Week 6 Power Rankings" }
-  ],
+  "githubRepo": "",
+  "espnProxy": "",
+  "teams": [],
+  "gameOfTheWeek": {
+    "a": { "gm": "Kashif", "team": "" },
+    "b": { "gm": "Humza", "team": "" },
+    "note": ""
+  },
+  "rankings": [],
   "champions": [
-    { "year": 2024, "team": "Add 2024 champion", "manager": "", "note": "Edit data/league.json" }
+    { "year": 2025, "gm": "Waleed", "team": "", "record": "", "recap": "", "quote": "", "second": "", "third": "", "img": "" },
+    { "year": 2024, "gm": "Kashif", "team": "Show Me Your TDs", "record": "9-5",
+      "recap": "Kashif went 9-5 while ranking only 6th in scoring, then got hot after trade-deadline deals (Mahomes and Evans for Josh Allen and Amari Cooper). He beat Rohan 177-110, top seed Ayaz 176-124, and reigning champ Daniyal 196-140 in the final, with seven players scoring 19 or more.",
+      "quote": "When people told me I wasn't going to win, I listened to the one person who told me I was: me.",
+      "second": "Tough Love :( (Daniyal, 6-8)", "third": "Prank Invasion (Zohabe, 9-5)",
+      "img": "https://ffsuckmacock.weebly.com/uploads/2/1/9/4/21943282/published/img-2915-2.jpg" },
+    { "year": 2023, "gm": "Daniyal", "team": "Tough Love :(", "record": "10-4",
+      "recap": "A first-round bye, then a 159-111 win over Saaf behind 43 points from Breece Hall. Daniyal edged Rohan 153-151 in the final on a 38-point Davante Adams game and became the first GM with two rings.",
+      "quote": "Amidst a league of boys copping wedding rings, stands a man copping championship rings 💍💍 #EarnednotGiven",
+      "second": "Amon Ra Doggin It (Rohan, 8-6)", "third": "Galactic Geckos (Saaf, 9-5)",
+      "img": "https://ffsuckmacock.weebly.com/uploads/2/1/9/4/21943282/published/img-4529.jpg" },
+    { "year": 2022, "gm": "Saaf", "team": "Galactic Geckos", "record": "8-5",
+      "recap": "A late Christian McCaffrey surge got the 5th seed into the playoffs. Saaf beat Kashif, then Zohabe 163-145 on a 36-point Josh Allen game, and won the final 143-127 over first-time finalist Dheeraj behind 31 from DeVonta Smith.",
+      "quote": "When you win, you attract nazr, when you lose, you learn sabr.",
+      "second": "Cee Deez Nuts (Dheeraj, 9-4)", "third": "Mr Theil Your Girl (Rohan, 6-7)",
+      "img": "https://ffsuckmacock.weebly.com/uploads/2/1/9/4/21943282/published/img-6175_1.jpg" },
+    { "year": 2021, "gm": "Umaize", "team": "Penguins of Madagascar", "record": "10-3",
+      "recap": "The second-best record in league history, plus a 5-game win streak, earned the 1 seed. Umaize beat Daniyal 105-54 in the semifinal, then defending champ Humza 163-125 in the final, led by Joe Mixon and Davante Adams.",
+      "quote": "You know, I'm something of a sports analyst myself.",
+      "second": "Certified Down Bad (Humza, 7-6)", "third": "Swag Waleed (Waleed, 6-6)",
+      "img": "https://ffsuckmacock.weebly.com/uploads/2/1/9/4/21943282/editor/img-4769.jpg?1640749386" },
+    { "year": 2020, "gm": "Humza", "team": "2 Girls 1 Kupp", "record": "7-5",
+      "recap": "A 4th seed with no steady QB (Minshew, Tua, then Taysom Hill) rode Dalvin Cook and DeAndre Hopkins. It beat Zohabe by 31, Dheeraj by nearly 60, and Saaf 183-135 in the final behind 38 from Jalen Hurts in his only fantasy start.",
+      "quote": "I may be down bad, but at least I'm not dog-water at fantasy like the rest of the league.",
+      "second": "Green Beans (Saaf, 7-5)", "third": "I Hate Kaale (Dheeraj, 8-4)",
+      "img": "https://ffsuckmacock.weebly.com/uploads/2/1/9/4/21943282/editor/img-9922.jpg?1628559436" },
+    { "year": 2019, "gm": "", "team": "@TyreekandMorty", "record": "8-4",
+      "recap": "Ezekiel Elliott and Aaron Jones carried the 2 seed. It edged the 6th-seeded Shlump Boyz 125.68-120.66 in the semifinal, then beat Humza's Swim with Charks 152.96-106.44 in the final.",
+      "quote": "Virginity is not dignity, it is just lack of opportunity.",
+      "second": "Swim with Charks (Humza, 6-6)", "third": "Shlump Boyz (Saaf, 6-6)",
+      "img": "https://ffsuckmacock.weebly.com/uploads/2/1/9/4/21943282/editor/img-0817.jpg?1599001300" },
+    { "year": 2018, "gm": "", "team": "Baby Johnny", "record": "6-6",
+      "recap": "The league's first champion. Mahomes and Ezekiel Elliott got the 5th seed in at 6-6. Baby Johnny beat Team Khanzada 172.3-111.6, the 1 seed Team Malik 175.1-150.6, and Team Bakali 147.8-74.1 in the final.",
+      "quote": "Don't cry because it's over, smile because it happened.",
+      "second": "Team Bakali (Zohabe, 8-4)", "third": "Tater Todds (Humza, 6-6)",
+      "img": "https://ffsuckmacock.weebly.com/uploads/2/1/9/4/21943282/editor/img-7102.jpeg?1568047292" }
   ],
-  "history": [
-    { "year": 2023, "title": "2023 season", "body": "Add the recap, standings, or a photo link here." }
-  ],
-  "espnProxy": ""
+  "history": []
 }
