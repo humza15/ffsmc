@@ -5,7 +5,7 @@
   "week": 4,
   "franchiseStatsUrl": "https://fantasy-franchise.com/nfl/espn/1944871/",
   "githubRepo": "",
-  "espnProxy": "",
+  "espnProxy": "https://hello-world-1234.humza15.workers.dev",
   "teams": [],
   "gameOfTheWeek": {
     "a": { "gm": "Kashif", "team": "" },
