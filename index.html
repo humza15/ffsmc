@@ -149,8 +149,9 @@ nav button.on{color:var(--orange)}
 </nav>
 
 <script>
-const APP_VERSION = '0.3.0';
+const APP_VERSION = '0.3.1';
 const CHANGELOG = [
+  ['0.3.1', 'Data files load from the data folder or the main folder, clearer error messages, ESPN Worker reads transactions week by week.'],
   ['0.3.0', 'Champions Corner year pages, Game of the Week fixes, reliable update checks, ESPN Worker connected.'],
   ['0.2.0', 'Rankings folder auto-loads, new Champions Corner, Game of the Week, ESPN feed support.'],
   ['0.1.0', 'First release: rankings, champions corner, history, sample transactions, ESPN launcher, update prompts.']
@@ -170,16 +171,23 @@ $('tabs').addEventListener('click', e => { const b = e.target.closest('button');
 /* ---------- data ---------- */
 function showErr(m){ const e = $('err'); e.textContent = (e.textContent ? e.textContent + ' ' : '') + m; e.style.display = 'block'; }
 window.addEventListener('error', ev => showErr('Script error: ' + ev.message));
-async function getJSON(path){
-  const r = await fetch(path, {cache:'no-cache'});
-  if (!r.ok) throw new Error(path + ' returned ' + r.status);
-  return r.json();
+async function getJSON(paths){
+  const fails = [];
+  for (const p of [].concat(paths)){
+    const url = new URL(p, location.href).href;
+    try {
+      const r = await fetch(p, {cache:'no-cache'});
+      if (r.ok) return await r.json();
+      fails.push(url + ' returned ' + r.status);
+    } catch(e){ fails.push(url + ' failed (' + e.message + ')'); }
+  }
+  throw new Error(fails.join('; '));
 }
 async function load(){
-  try { D = await getJSON('data/league.json'); }
-  catch(e){ showErr('Could not read data/league.json (' + e.message + '). Check the file is in the data folder and the JSON is valid.'); D = {name:'SUCKMACOCK', leagueId:'1944871', season:2026, week:4, teams:[], rankings:[], history:[]}; }
-  try { CH = await getJSON('data/champions.json'); }
-  catch(e){ showErr('Could not read data/champions.json (' + e.message + ').'); CH = []; }
+  try { D = await getJSON(['data/league.json', 'league.json']); }
+  catch(e){ showErr('Could not load league.json. ' + e.message); D = {name:'SUCKMACOCK', leagueId:'1944871', season:2026, week:4, teams:[], rankings:[], history:[]}; }
+  try { CH = await getJSON(['data/champions.json', 'champions.json']); }
+  catch(e){ showErr('Could not load champions.json. ' + e.message); CH = []; }
   render();
   loadRankings().then(r => { RK = r; renderRankings(); });
   loadTeams().then(renderGotw);

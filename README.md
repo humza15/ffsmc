@@ -45,3 +45,7 @@ Each is separate, so a typo in one can't break the other. The app shows a red ba
 ## Releasing an update
 Change `APP_VERSION` in `index.html` (and `VERSION` in `sw.js` to match), commit, and users see an Update banner.
 "Check for updates" in the ESPN tab compares against the version on GitHub and tells you the result.
+
+## Where the data files can live
+The app looks for `data/league.json` and `data/champions.json` first, then `league.json` and `champions.json` in the main folder.
+If the app shows a red bar, it lists the exact addresses it tried.
