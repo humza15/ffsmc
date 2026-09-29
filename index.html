@@ -69,6 +69,11 @@ nav button.on{color:var(--orange)}
 .season .bd{padding:14px}
 .season blockquote{margin:10px 0;padding-left:12px;border-left:3px solid var(--gold);font-style:italic;color:var(--mute)}
 .place{font-size:14px;margin:2px 0}
+#err{display:none;background:#B23A2E;color:#fff;font-size:13px;padding:8px 16px}
+.yr{display:flex;align-items:center;gap:14px;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:8px;color:var(--ink);font:inherit}
+.yr b{font:800 26px var(--head);min-width:58px}.yr span{flex:1;font-weight:600}
+.yr small{display:block;color:var(--mute);font-weight:400;font-size:13px}.yr i{font-style:normal;font-size:24px;color:var(--mute)}
+.season .bd p{line-height:1.55}
 #upd{display:none;position:fixed;left:12px;right:12px;top:calc(env(safe-area-inset-top,0px) + 8px);z-index:9;background:var(--orange);color:#fff;
   border-radius:12px;padding:12px 14px;align-items:center;justify-content:space-between;gap:10px;box-shadow:0 6px 20px rgba(0,0,0,.3)}
 #upd.on{display:flex}
@@ -84,6 +89,7 @@ nav button.on{color:var(--orange)}
 <div id="zoom"><img id="zoomImg" alt=""></div>
 
 <header><h1 id="lname">SUCKMACOCK</h1><p id="lsub">Fantasy football hub</p></header>
+<div id="err"></div>
 
 <main>
   <section id="home">
@@ -143,13 +149,14 @@ nav button.on{color:var(--orange)}
 </nav>
 
 <script>
-const APP_VERSION = '0.2.0';
+const APP_VERSION = '0.3.0';
 const CHANGELOG = [
+  ['0.3.0', 'Champions Corner year pages, Game of the Week fixes, reliable update checks, ESPN Worker connected.'],
   ['0.2.0', 'Rankings folder auto-loads, new Champions Corner, Game of the Week, ESPN feed support.'],
   ['0.1.0', 'First release: rankings, champions corner, history, sample transactions, ESPN launcher, update prompts.']
 ];
 const $ = id => document.getElementById(id);
-let D = null, TX = [], TEAMS = [], RK = [], txLive = false;
+let D = null, CH = [], TX = [], TEAMS = [], RK = [], txLive = false, txErr = '', champYear = null;
 
 /* ---------- tabs ---------- */
 function go(t){
@@ -161,9 +168,18 @@ function go(t){
 $('tabs').addEventListener('click', e => { const b = e.target.closest('button'); if (b) go(b.dataset.t); });
 
 /* ---------- data ---------- */
+function showErr(m){ const e = $('err'); e.textContent = (e.textContent ? e.textContent + ' ' : '') + m; e.style.display = 'block'; }
+window.addEventListener('error', ev => showErr('Script error: ' + ev.message));
+async function getJSON(path){
+  const r = await fetch(path, {cache:'no-cache'});
+  if (!r.ok) throw new Error(path + ' returned ' + r.status);
+  return r.json();
+}
 async function load(){
-  try { D = await (await fetch('data/league.json', {cache:'no-cache'})).json(); }
-  catch(e){ D = {name:'SUCKMACOCK', leagueId:'1944871', season:2026, week:4, teams:[], rankings:[], champions:[], history:[]}; }
+  try { D = await getJSON('data/league.json'); }
+  catch(e){ showErr('Could not read data/league.json (' + e.message + '). Check the file is in the data folder and the JSON is valid.'); D = {name:'SUCKMACOCK', leagueId:'1944871', season:2026, week:4, teams:[], rankings:[], history:[]}; }
+  try { CH = await getJSON('data/champions.json'); }
+  catch(e){ showErr('Could not read data/champions.json (' + e.message + ').'); CH = []; }
   render();
   loadRankings().then(r => { RK = r; renderRankings(); });
   loadTeams().then(renderGotw);
@@ -184,11 +200,8 @@ function render(){
   ['homeEspn','espnOpen'].forEach(i => $(i).href = espnUrl());
   $('franchise').href = D.franchiseStatsUrl || '#';
 
-  const champs = [...D.champions].sort((a,b) => b.year - a.year);
-  const c = champs[0];
-  $('homeChamp').innerHTML = c ? `<span class="muted">${c.year} champion</span><b>${esc(c.gm || c.team)}</b><span class="muted">${esc(c.gm ? c.team : '')}</span>` : '';
-  $('champs').innerHTML = champs.map(seasonCard).join('');
-  $('hist').innerHTML = D.history.length ? '<h2 style="margin-top:20px">League history</h2>' + D.history.map(h => `<div class="card"><h3>${esc(h.title)}</h3><p style="margin:0">${esc(h.body)}</p></div>`).join('') : '';
+  $('hist').innerHTML = (D.history || []).length ? '<h2 style="margin-top:20px">League history</h2>' + D.history.map(h => `<div class="card"><h3>${esc(h.title)}</h3><p style="margin:0">${esc(h.body)}</p></div>`).join('') : '';
+  renderChamps();
   renderGotw();
 
   $('ver').textContent = APP_VERSION;
@@ -204,16 +217,29 @@ $('zoom').onclick = () => $('zoom').classList.remove('on');
 
 /* ---------- champions, game of the week, rankings ---------- */
 function seasonCard(x){
-  const img = x.img ? `<img src="${esc(x.img)}" alt="" loading="lazy" onerror="this.remove()">` : '';
   const sub = [x.gm && x.team ? 'GM ' + x.gm : '', x.record].filter(Boolean).join(', ');
   const std = `https://fantasy.espn.com/football/league/standings?leagueId=${D.leagueId}&seasonId=${x.year}`;
-  return `<div class="card season"><div class="top"><span class="muted">${x.year} champion</span><b>${esc(x.team || x.gm)}</b>${sub ? `<span class="muted">${esc(sub)}</span>` : ''}</div>${img}<div class="bd">
+  return `<div class="card season"><div class="top"><span class="muted">${x.year} champion</span><b>${esc(x.team || x.gm)}</b>${sub ? `<span class="muted">${esc(sub)}</span>` : ''}</div><div class="bd">
     <p style="margin:0 0 6px">${esc(x.recap || 'Recap coming soon.')}</p>
     ${x.quote ? `<blockquote>${esc(x.quote)}</blockquote>` : ''}
     ${x.second ? `<div class="place"><b>Runner-up</b> ${esc(x.second)}</div>` : ''}
     ${x.third ? `<div class="place"><b>Third</b> ${esc(x.third)}</div>` : ''}
-    <a class="muted" href="${std}" target="_blank" rel="noopener">Full standings</a></div></div>`;
+    <p style="margin:10px 0 0"><a class="muted" href="${std}" target="_blank" rel="noopener">Full standings</a></p></div></div>`;
 }
+function renderChamps(){
+  const list = [...CH].sort((a,b) => b.year - a.year), c = list[0];
+  $('homeChamp').innerHTML = c ? `<span class="muted">${c.year} champion</span><b>${esc(c.gm || c.team)}</b><span class="muted">${esc(c.gm ? c.team : '')}</span>` : '<span class="muted">No champion added yet</span>';
+  const x = champYear && list.find(y => y.year === champYear);
+  $('champs').innerHTML = x
+    ? `<button class="btn alt" id="back" style="margin-bottom:12px">Back to all seasons</button>${seasonCard(x)}`
+    : (list.map(y => `<button class="yr" data-y="${y.year}"><b>${y.year}</b><span>${esc(y.team || y.gm)}<small>${esc(y.gm && y.team ? 'GM ' + y.gm : '')}</small></span><i>›</i></button>`).join('') || '<p class="muted">No seasons added yet.</p>');
+}
+$('champs').addEventListener('click', e => {
+  const y = e.target.closest('.yr'), b = e.target.closest('#back');
+  if (!y && !b) return;
+  champYear = y ? +y.dataset.y : null;
+  renderChamps(); document.querySelector('main').scrollTop = 0;
+});
 function renderGotw(){
   const g = D.gameOfTheWeek;
   if (!g){ $('gotw').style.display = 'none'; return; }
@@ -256,12 +282,14 @@ function renderRankings(){
 // Tries live ESPN data through an optional proxy (see espnProxy in data/league.json).
 // Falls back to generated sample data seeded from the league ID.
 async function loadTx(){
+  txErr = '';
   if (D.espnProxy){
     try {
       const r = await fetch(`${D.espnProxy}?view=transactions&leagueId=${D.leagueId}&season=${D.season}`);
-      const j = await r.json();
-      if (Array.isArray(j) && j.length){ TX = j; txLive = true; return; }
-    } catch(e){}
+      const j = await r.json().catch(() => null);
+      if (Array.isArray(j)){ TX = j; txLive = true; return; }
+      txErr = (j && j.error) || 'HTTP ' + r.status;
+    } catch(e){ txErr = 'could not reach the Worker'; }
   }
   TX = sampleTx(D.leagueId, D.teams);
 }
@@ -288,10 +316,10 @@ function ago(ts){
 }
 const txRow = t => `<div class="tx"><span class="tag ${t.type}">${t.type}</span><div>${esc(t.text)}<div class="muted">${ago(t.ts)}</div></div></div>`;
 function renderTx(){
-  $('txList').innerHTML = TX.map(txRow).join('');
-  $('homeTx').innerHTML = TX.slice(0,3).map(txRow).join('');
+  $('txList').innerHTML = TX.map(txRow).join('') || '<p class="muted" style="margin:0">No transactions yet this season.</p>';
+  $('homeTx').innerHTML = TX.slice(0,3).map(txRow).join('') || '<p class="muted" style="margin:0">No transactions yet.</p>';
   $('txBadge').style.display = txLive ? 'none' : '';
-  $('txNote').textContent = txLive ? 'Live from ESPN.' : 'Sample data for now. Live ESPN feed needs a small proxy (see README).';
+  $('txNote').textContent = txLive ? 'Live from ESPN.' : 'Sample data.' + (txErr ? ' Live feed problem: ' + txErr + '.' : '');
 }
 
 /* ---------- misc ---------- */
@@ -302,27 +330,37 @@ $('copyId').onclick = async () => {
 };
 
 /* ---------- updates ---------- */
-let reg = null;
-function offerUpdate(){ $('upd').classList.add('on'); }
-$('updBtn').onclick = () => { if (reg && reg.waiting) reg.waiting.postMessage('SKIP_WAITING'); else location.reload(); };
-$('checkUpd').onclick = async () => {
-  $('updMsg').textContent = 'Checking...';
-  try { if (reg) await reg.update(); } catch(e){}
-  setTimeout(() => { $('updMsg').textContent = (reg && reg.waiting) ? 'Update ready. Tap Update at the top.' : 'You are on the latest version.'; }, 1200);
-};
-if ('serviceWorker' in navigator){
-  navigator.serviceWorker.register('sw.js').then(r => {
-    reg = r;
-    if (r.waiting && navigator.serviceWorker.controller) offerUpdate();
-    r.addEventListener('updatefound', () => {
-      const w = r.installing;
-      w && w.addEventListener('statechange', () => { if (w.state === 'installed' && navigator.serviceWorker.controller) offerUpdate(); });
-    });
-    document.addEventListener('visibilitychange', () => { if (!document.hidden) r.update().catch(()=>{}); });
-  }).catch(()=>{});
-  let reloaded = false;
-  navigator.serviceWorker.addEventListener('controllerchange', () => { if (!reloaded){ reloaded = true; location.reload(); } });
+// Compares the version in the newest index.html on the server with the version running now.
+let reg = null, newVer = '';
+function offerUpdate(v){ newVer = v; $('upd').querySelector('span').textContent = 'Version ' + v + ' is ready.'; $('upd').classList.add('on'); }
+async function latestVersion(){
+  const r = await fetch('index.html?v=' + Date.now(), {cache:'no-store'});
+  const m = (await r.text()).match(/APP_VERSION = '([\d.]+)'/);
+  return m ? m[1] : null;
 }
+async function checkUpdate(manual){
+  const msg = $('updMsg'); if (manual) msg.textContent = 'Checking...';
+  try {
+    const v = await latestVersion();
+    if (v && v !== APP_VERSION){ offerUpdate(v); if (manual) msg.textContent = 'Version ' + v + ' is available. Tap Update at the top.'; }
+    else if (manual) msg.textContent = 'You are on the latest version (' + APP_VERSION + ').';
+    if (reg) reg.update().catch(() => {});
+  } catch(e){ if (manual) msg.textContent = 'Could not check for updates. Are you online?'; }
+}
+async function applyUpdate(){
+  $('updBtn').textContent = 'Updating...';
+  try {
+    const regs = await navigator.serviceWorker.getRegistrations();
+    await Promise.all(regs.map(r => r.unregister()));
+    await Promise.all((await caches.keys()).map(k => caches.delete(k)));
+  } catch(e){}
+  location.replace(location.pathname + '?u=' + Date.now());
+}
+$('updBtn').onclick = applyUpdate;
+$('checkUpd').onclick = () => checkUpdate(true);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) checkUpdate(false); });
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js', {updateViaCache:'none'}).then(r => { reg = r; }).catch(() => {});
+checkUpdate(false);
 load();
 </script>
 </body>

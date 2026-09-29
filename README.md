@@ -36,3 +36,12 @@ Home shows the newest name, the Rankings tab shows all.
 4. Test in Safari: `YOUR-WORKER-URL/?view=teams&season=2026`, then `?debug=1` if anything looks off.
 5. Put the Worker URL in `espnProxy` in `data/league.json`. The SAMPLE badge disappears and team names fill the Game of the Week.
 Later, set `ALLOW_ORIGIN` to your Pages origin (for example `https://username.github.io`).
+
+## Files you edit
+- `data/league.json`: week number, Game of the Week, team list, ESPN Worker URL.
+- `data/champions.json`: one entry per season (add the new champion at the top).
+Each is separate, so a typo in one can't break the other. The app shows a red bar if a file can't be read.
+
+## Releasing an update
+Change `APP_VERSION` in `index.html` (and `VERSION` in `sw.js` to match), commit, and users see an Update banner.
+"Check for updates" in the ESPN tab compares against the version on GitHub and tells you the result.

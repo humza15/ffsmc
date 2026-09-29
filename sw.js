@@ -1,12 +1,16 @@
-// Bump VERSION on every release. A changed sw.js is what makes phones detect an update.
-const VERSION = '0.2.0';
+// Bump VERSION with each release (keep it equal to APP_VERSION in index.html).
+const VERSION = '0.3.0';
 const CACHE = 'suckmacock-' + VERSION;
-const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'data/league.json',
+const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'data/league.json', 'data/champions.json',
   'icons/icon-192.png', 'icons/apple-touch-icon.png'];
 
 self.addEventListener('install', e => {
-  // No skipWaiting here: the new version waits until the user taps "Update".
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)));
+  // Cache each file separately so one missing file can no longer block the whole install.
+  e.waitUntil(
+    caches.open(CACHE)
+      .then(c => Promise.allSettled(SHELL.map(u => c.add(new Request(u, { cache: 'reload' })))))
+      .then(() => self.skipWaiting())
+  );
 });
 
 self.addEventListener('activate', e => {
@@ -17,19 +21,14 @@ self.addEventListener('activate', e => {
   );
 });
 
-self.addEventListener('message', e => {
-  if (e.data === 'SKIP_WAITING') self.skipWaiting();
-});
-
-// Network-first: fresh content when online, cached copy when offline.
+// Network-first, revalidating past GitHub Pages' 10-minute HTTP cache. Cached copy is the offline fallback.
 self.addEventListener('fetch', e => {
   const req = e.request;
   if (req.method !== 'GET' || new URL(req.url).origin !== location.origin) return;
   e.respondWith(
-    fetch(req)
+    fetch(req.url, { cache: 'no-cache' })
       .then(res => {
-        const copy = res.clone();
-        caches.open(CACHE).then(c => c.put(req, copy));
+        if (res.ok) { const copy = res.clone(); caches.open(CACHE).then(c => c.put(req, copy)); }
         return res;
       })
       .catch(() => caches.match(req).then(r => r || caches.match('index.html')))
