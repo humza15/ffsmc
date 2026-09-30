@@ -8,80 +8,79 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Suckmacock">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#1F3B2D">
+<meta name="theme-color" content="#0B0C0E">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<script>try{document.documentElement.dataset.theme=localStorage.getItem('theme')||'dark'}catch(e){}</script>
 <style>
-:root{
-  --turf:#1F3B2D; --turf2:#2B5240; --chalk:#F3F1E7; --card:#FFFFFF; --ink:#1C231E;
-  --mute:#6A7268; --line:#DAD7C7; --orange:#FF6B1A; --gold:#C99A2E;
-  --head:'Avenir Next Condensed','Arial Narrow','Roboto Condensed',sans-serif;
-  --body:-apple-system,'SF Pro Text','Helvetica Neue',Arial,sans-serif;
-  box-sizing:border-box;
-}
-@media (prefers-color-scheme:dark){
-  :root:not([data-theme="light"]){--chalk:#121A15;--card:#1B2620;--ink:#EDEBDD;--mute:#9AA595;--line:#2C3A31;}
-}
+:root,:root[data-theme="dark"]{--bg:#0B0C0E;--surface:#131518;--ink:#ECEDEF;--mute:#8B9098;--line:#24272C;--accent:#ECEDEF;--accent-ink:#0B0C0E;--head-bg:#0B0C0E;--head-ink:#ECEDEF;--hi:#8B9098;--hi-ink:#0B0C0E;--link:#ECEDEF}
+:root[data-theme="light"]{--bg:#F4F4F2;--surface:#FFFFFF;--ink:#0F1113;--mute:#6A6E75;--line:#E0E0DC;--accent:#0F1113;--accent-ink:#FFFFFF;--head-bg:#0F1113;--head-ink:#FFFFFF;--hi:#0F1113;--hi-ink:#FFFFFF;--link:#0F1113}
+:root[data-theme="bengals-orange"]{--bg:#F7F5F3;--surface:#FFFFFF;--ink:#000000;--mute:#615A56;--line:#E4DEDA;--accent:#FB4F14;--accent-ink:#000000;--head-bg:#FB4F14;--head-ink:#000000;--hi:#000000;--hi-ink:#FFFFFF;--link:#C93A0B}
+:root[data-theme="bengals-black"]{--bg:#000000;--surface:#0E0E0E;--ink:#FFFFFF;--mute:#A0A0A0;--line:#262626;--accent:#FB4F14;--accent-ink:#000000;--head-bg:#000000;--head-ink:#FFFFFF;--hi:#FB4F14;--hi-ink:#000000;--link:#FB4F14}
+:root[data-theme="ravens-purple"]{--bg:#F4F3F9;--surface:#FFFFFF;--ink:#120E33;--mute:#635F82;--line:#DDDAEC;--accent:#241773;--accent-ink:#FFFFFF;--head-bg:#241773;--head-ink:#FFFFFF;--hi:#9E7C0C;--hi-ink:#FFFFFF;--link:#241773}
+:root[data-theme="ravens-black"]{--bg:#000000;--surface:#0D0C12;--ink:#F2F1F7;--mute:#A19EB8;--line:#25213D;--accent:#9E7C0C;--accent-ink:#000000;--head-bg:#241773;--head-ink:#FFFFFF;--hi:#9E7C0C;--hi-ink:#000000;--link:#9E7C0C}
+:root{--sans:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Helvetica,Arial,sans-serif;box-sizing:border-box}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;margin:0}
-body{background:var(--chalk);color:var(--ink);font:16px/1.45 var(--body);display:flex;flex-direction:column;overflow:hidden}
-header{background:var(--turf);color:#fff;padding:calc(env(safe-area-inset-top,0px) + 10px) 18px 12px;
-  background-image:repeating-linear-gradient(90deg,transparent 0 46px,rgba(255,255,255,.06) 46px 48px)}
-header h1{font:800 34px/1 var(--head);letter-spacing:.5px;margin:0}
-header p{margin:2px 0 0;font-size:13px;color:#BFD3C6}
-main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px 16px 24px}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);display:flex;flex-direction:column;overflow:hidden;-webkit-font-smoothing:antialiased}
+header{background:var(--head-bg);color:var(--head-ink);padding:calc(env(safe-area-inset-top,0px) + 14px) 18px 14px;border-bottom:1px solid var(--line)}
+header h1{font:700 17px/1 var(--sans);letter-spacing:.26em;margin:0}
+header p{margin:7px 0 0;font-size:12px;letter-spacing:.04em;opacity:.72}
+main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:18px 16px 28px}
 section{display:none;max-width:640px;margin:0 auto}
 section.on{display:block}
-h2{font:700 24px/1.1 var(--head);margin:0 0 12px}
-h3{font:700 18px/1.2 var(--head);margin:0 0 4px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
-.muted{color:var(--mute);font-size:13px}
-.champ{background:var(--turf);color:#fff;border:0;border-left:6px solid var(--gold)}
-.champ .muted{color:#BFD3C6}
-.champ b{font:800 28px/1.1 var(--head);display:block;margin-top:2px}
-.btn{display:block;width:100%;padding:14px;border:0;border-radius:12px;background:var(--orange);color:#fff;
-  font:700 17px var(--head);text-align:center;text-decoration:none;letter-spacing:.3px}
-.btn.alt{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
-.rank img{width:100%;border-radius:10px;display:block}
-.ph{aspect-ratio:4/3;border-radius:10px;border:2px dashed var(--line);display:grid;place-items:center;color:var(--mute);text-align:center;padding:16px;font-size:14px}
-.weeks{display:flex;gap:8px;overflow-x:auto;padding-bottom:10px;margin-bottom:6px}
-.weeks button{flex:none;border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:20px;padding:7px 14px;font:700 15px var(--head)}
-.weeks button.on{background:var(--turf);color:#fff;border-color:var(--turf)}
-.tx{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--line)}
+h2{font:600 11px/1 var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--mute);margin:24px 0 10px;display:flex;align-items:center;gap:8px}
+section>h2:first-child{margin-top:0}
+h3{font:600 16px/1.25 var(--sans);margin:0 0 4px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:2px;padding:14px;margin-bottom:10px}
+.muted{color:var(--mute);font-size:12px}
+.btn{display:block;width:100%;padding:13px;border:1px solid var(--accent);border-radius:2px;background:var(--accent);color:var(--accent-ink);font:600 12px var(--sans);letter-spacing:.14em;text-transform:uppercase;text-align:center;text-decoration:none}
+.btn.alt{background:transparent;color:var(--ink);border-color:var(--line)}
+#homeEspn{margin-top:14px}
+.rank img{width:100%;display:block}
+.ph{aspect-ratio:4/3;border:1px dashed var(--line);display:grid;place-items:center;color:var(--mute);text-align:center;padding:16px;font-size:13px}
+.tx{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--line);font-size:13px;line-height:1.4}
 .tx:last-child{border:0}
-.tag{flex:none;min-width:58px;text-align:center;font:800 13px var(--head);letter-spacing:.6px;padding:4px 0;border-radius:6px;color:#fff}
-.ADD{background:#2E8B57}.DROP{background:#B23A2E}.TRADE{background:var(--gold)}.WAIVER{background:#3B6EA8}
-.badge{display:inline-block;font:700 12px var(--head);background:var(--gold);color:#1C231E;border-radius:6px;padding:2px 8px;margin-left:6px;vertical-align:middle}
-nav{display:flex;background:var(--card);border-top:1px solid var(--line);padding:6px 4px calc(env(safe-area-inset-bottom,0px) + 6px)}
-nav button{flex:1;background:none;border:0;color:var(--mute);font:700 12px var(--head);padding:6px 0;display:flex;flex-direction:column;align-items:center;gap:2px}
-nav button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-nav button.on{color:var(--orange)}
-.gotw{background:#161C18;color:#F3F1E7;border-radius:14px;padding:14px;margin-bottom:14px;border-left:6px solid var(--orange)}
-.gotw .hd{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
-.gotw .hd b{font:800 22px/1 var(--head)}.gotw .hd span{color:#9AA595;font-size:13px}
+.tx .muted{font-size:11px;margin-top:1px}
+.tag{flex:none;min-width:50px;text-align:center;font:700 9px/1 var(--sans);letter-spacing:.1em;padding:5px 0;border-radius:1px;color:#fff}
+.ADD{background:#2F7D57}.DROP{background:#A8382D}.TRADE{background:#8A6D1D}.WAIVER{background:#38659B}
+.badge{display:inline-block;font:700 9px/1 var(--sans);letter-spacing:.12em;background:var(--hi);color:var(--hi-ink);padding:3px 6px;border-radius:1px}
+nav{display:flex;background:var(--surface);border-top:1px solid var(--line);padding:6px 2px calc(env(safe-area-inset-bottom,0px) + 6px)}
+nav button{flex:1;background:none;border:0;color:var(--mute);font:600 9px var(--sans);letter-spacing:.1em;text-transform:uppercase;padding:6px 0;display:flex;flex-direction:column;align-items:center;gap:4px}
+nav button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:square;stroke-linejoin:miter}
+nav button.on{color:var(--link)}
+.gotw{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:2px;padding:14px;margin-bottom:10px}
+.gotw .hd{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px}
+.gotw .hd b{font:600 11px var(--sans);letter-spacing:.16em;text-transform:uppercase}
+.gotw .hd span{color:var(--mute);font-size:12px}
 .gotw .vs{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;text-align:center}
-.gotw .gm{font:800 26px/1.05 var(--head)}.gotw .tm{font-size:13px;color:#BFD3C6;margin-top:2px}
-.gotw .x{font:700 15px var(--head);color:var(--orange)}
+.gotw .gm{font:700 22px/1.1 var(--sans);letter-spacing:-.01em}
+.gotw .tm{font-size:12px;color:var(--mute);margin-top:3px}
+.gotw .x{font:600 11px var(--sans);letter-spacing:.14em;color:var(--mute);text-transform:uppercase}
 .season{padding:0;overflow:hidden}
-.season .top{padding:14px;background:var(--turf);color:#fff;border-left:6px solid var(--gold)}
-.season .top .muted{color:#BFD3C6}.season .top b{display:block;font:800 26px/1.1 var(--head)}
-.season img{width:100%;max-height:260px;object-fit:cover;display:block}
+.season .top{padding:16px 14px;background:var(--head-bg);color:var(--head-ink);border-left:3px solid var(--hi)}
+.season .top .muted{color:var(--head-ink);opacity:.7}
+.season .top b{display:block;font:700 22px/1.15 var(--sans);letter-spacing:-.01em;margin-top:2px}
 .season .bd{padding:14px}
-.season blockquote{margin:10px 0;padding-left:12px;border-left:3px solid var(--gold);font-style:italic;color:var(--mute)}
-.place{font-size:14px;margin:2px 0}
+.season .bd p{line-height:1.6}
+.season blockquote{margin:12px 0;padding-left:12px;border-left:2px solid var(--hi);color:var(--mute);font-style:italic}
+.place{font-size:13px;margin:3px 0}
+.yr{display:flex;align-items:center;gap:16px;width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:2px;padding:14px;margin-bottom:6px;color:var(--ink);font:inherit}
+.yr b{font:300 26px/1 var(--sans);min-width:60px;font-variant-numeric:tabular-nums}
+.yr span{flex:1;font-weight:600;font-size:14px}
+.yr small{display:block;color:var(--mute);font-weight:400;font-size:12px;margin-top:2px}
+.yr i{font-style:normal;font-size:20px;color:var(--mute)}
+.themes{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.th{background:var(--surface);border:1px solid var(--line);border-radius:2px;padding:8px;color:var(--ink);font:600 12px var(--sans);text-align:left;letter-spacing:.02em}
+.th i{display:block;height:26px;margin-bottom:8px;border:1px solid var(--line)}
+.th.on{border-color:var(--link);box-shadow:inset 0 0 0 1px var(--link)}
 #err{display:none;background:#B23A2E;color:#fff;font-size:13px;padding:8px 16px}
-.yr{display:flex;align-items:center;gap:14px;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:8px;color:var(--ink);font:inherit}
-.yr b{font:800 26px var(--head);min-width:58px}.yr span{flex:1;font-weight:600}
-.yr small{display:block;color:var(--mute);font-weight:400;font-size:13px}.yr i{font-style:normal;font-size:24px;color:var(--mute)}
-.season .bd p{line-height:1.55}
-#upd{display:none;position:fixed;left:12px;right:12px;top:calc(env(safe-area-inset-top,0px) + 8px);z-index:9;background:var(--orange);color:#fff;
-  border-radius:12px;padding:12px 14px;align-items:center;justify-content:space-between;gap:10px;box-shadow:0 6px 20px rgba(0,0,0,.3)}
+#upd{display:none;position:fixed;left:12px;right:12px;top:calc(env(safe-area-inset-top,0px) + 8px);z-index:9;background:var(--accent);color:var(--accent-ink);border-radius:2px;padding:12px 14px;align-items:center;justify-content:space-between;gap:10px;box-shadow:0 8px 24px rgba(0,0,0,.35);font-size:13px}
 #upd.on{display:flex}
-#upd button{background:#fff;color:var(--orange);border:0;border-radius:8px;padding:8px 14px;font:800 15px var(--head)}
-#zoom{display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:8;overflow:auto;padding:calc(env(safe-area-inset-top,0px) + 16px) 8px}
+#upd button{background:var(--accent-ink);color:var(--accent);border:0;border-radius:2px;padding:8px 14px;font:600 11px var(--sans);letter-spacing:.12em;text-transform:uppercase}
+#zoom{display:none;position:fixed;inset:0;background:rgba(0,0,0,.94);z-index:8;overflow:auto;padding:calc(env(safe-area-inset-top,0px) + 16px) 8px}
 #zoom.on{display:block}#zoom img{width:100%}
-.log li{margin-bottom:6px}
-.log{padding-left:18px;margin:6px 0 0}
+.log{padding-left:18px;margin:8px 0 0}.log li{margin-bottom:6px}
 </style>
 </head>
 <body>
@@ -94,7 +93,6 @@ nav button.on{color:var(--orange)}
 <main>
   <section id="home">
     <div class="gotw" id="gotw"></div>
-    <div class="card champ" id="homeChamp"></div>
     <h2>Latest power rankings</h2>
     <div class="card rank" id="homeRank"></div>
     <h2>Recent moves</h2>
@@ -118,21 +116,22 @@ nav button.on{color:var(--orange)}
     <h2>Transactions <span class="badge" id="txBadge">SAMPLE</span></h2>
     <div class="card" id="txList"></div>
     <p class="muted" id="txNote"></p>
+    <button class="btn alt" id="txRefresh">Refresh now</button>
   </section>
 
   <section id="espn">
-    <h2>ESPN</h2>
+    <h2>Themes</h2>
+    <div class="themes" id="themes"></div>
+    <h2>League</h2>
     <div class="card">
-      <h3>League <span id="lid"></span></h3>
-      <p class="muted">Opens the ESPN Fantasy app if it is installed. Otherwise it opens the league in Safari.</p>
+      <h3>ESPN league <span id="lid"></span></h3>
+      <p class="muted" style="margin:0 0 12px">Opens the ESPN Fantasy app if it is installed, otherwise Safari.</p>
       <a class="btn" id="espnOpen" target="_blank" rel="noopener">Open league</a>
+      <button class="btn alt" id="copyId" style="margin-top:8px">Copy league ID</button>
     </div>
+    <h2>About</h2>
     <div class="card">
-      <button class="btn alt" id="copyId">Copy league ID</button>
-    </div>
-    <div class="card">
-      <h3>About this app</h3>
-      <p class="muted">Version <span id="ver"></span></p>
+      <h3>Version <span id="ver"></span></h3>
       <ul class="log muted" id="changelog"></ul>
       <button class="btn alt" id="checkUpd" style="margin-top:12px">Check for updates</button>
       <p class="muted" id="updMsg"></p>
@@ -145,19 +144,20 @@ nav button.on{color:var(--orange)}
   <button data-t="rankings"><svg viewBox="0 0 24 24"><path d="M6 20V10M12 20V4M18 20v-7"/></svg>Rankings</button>
   <button data-t="history"><svg viewBox="0 0 24 24"><path d="M8 4h8v5a4 4 0 0 1-8 0V4zM8 6H4v1a3 3 0 0 0 4 3M16 6h4v1a3 3 0 0 1-4 3M12 13v4M8 20h8"/></svg>History</button>
   <button data-t="moves"><svg viewBox="0 0 24 24"><path d="M4 8h14l-3-3M20 16H6l3 3"/></svg>Moves</button>
-  <button data-t="espn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>ESPN</button>
+  <button data-t="espn"><svg viewBox="0 0 24 24"><path d="M4 6h8M16 6h4M4 12h3M11 12h9M4 18h10M18 18h2"/><circle cx="14" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="16" cy="18" r="2"/></svg>Settings</button>
 </nav>
 
 <script>
-const APP_VERSION = '0.3.1';
+const APP_VERSION = '0.3.2';
 const CHANGELOG = [
+  ['0.3.2', 'New minimal design, Settings tab with six themes, new SMC logo, transactions checked every 4 hours, champion removed from Home.'],
   ['0.3.1', 'Data files load from the data folder or the main folder, clearer error messages, ESPN Worker reads transactions week by week.'],
   ['0.3.0', 'Champions Corner year pages, Game of the Week fixes, reliable update checks, ESPN Worker connected.'],
   ['0.2.0', 'Rankings folder auto-loads, new Champions Corner, Game of the Week, ESPN feed support.'],
   ['0.1.0', 'First release: rankings, champions corner, history, sample transactions, ESPN launcher, update prompts.']
 ];
 const $ = id => document.getElementById(id);
-let D = null, CH = [], TX = [], TEAMS = [], RK = [], txLive = false, txErr = '', champYear = null;
+let D = null, CH = [], TX = [], TEAMS = [], RK = [], txLive = false, txErr = '', txAt = 0, champYear = null;
 
 /* ---------- tabs ---------- */
 function go(t){
@@ -214,7 +214,7 @@ function render(){
 
   $('ver').textContent = APP_VERSION;
   $('changelog').innerHTML = CHANGELOG.map(c => `<li><b>${c[0]}</b> ${esc(c[1])}</li>`).join('');
-  try { const t = localStorage.getItem('tab'); if (t) go(t); } catch(e){}
+  let t = 'home'; try { t = localStorage.getItem('tab') || 'home'; } catch(e){} go(t);
 }
 
 document.addEventListener('click', e => {
@@ -236,7 +236,6 @@ function seasonCard(x){
 }
 function renderChamps(){
   const list = [...CH].sort((a,b) => b.year - a.year), c = list[0];
-  $('homeChamp').innerHTML = c ? `<span class="muted">${c.year} champion</span><b>${esc(c.gm || c.team)}</b><span class="muted">${esc(c.gm ? c.team : '')}</span>` : '<span class="muted">No champion added yet</span>';
   const x = champYear && list.find(y => y.year === champYear);
   $('champs').innerHTML = x
     ? `<button class="btn alt" id="back" style="margin-bottom:12px">Back to all seasons</button>${seasonCard(x)}`
@@ -256,7 +255,7 @@ function renderGotw(){
     return `<div><div class="gm">${esc(m.gm)}</div><div class="tm">${esc(t || 'Team name TBD')}</div></div>`;
   };
   $('gotw').style.display = '';
-  $('gotw').innerHTML = `<div class="hd"><b>Game of the Week</b><span>Week ${D.week}</span></div><div class="vs">${side(g.a)}<span class="x">vs</span>${side(g.b)}</div>${g.note ? `<p style="margin:10px 0 0;font-size:13px;color:#9AA595">${esc(g.note)}</p>` : ''}`;
+  $('gotw').innerHTML = `<div class="hd"><b>Game of the Week</b><span>Week ${D.week}</span></div><div class="vs">${side(g.a)}<span class="x">vs</span>${side(g.b)}</div>${g.note ? `<p class="muted" style="margin:12px 0 0">${esc(g.note)}</p>` : ''}`;
 }
 async function loadTeams(){
   if (!D.espnProxy) return [];
@@ -289,15 +288,25 @@ function renderRankings(){
 /* ---------- transactions ---------- */
 // Tries live ESPN data through an optional proxy (see espnProxy in data/league.json).
 // Falls back to generated sample data seeded from the league ID.
-async function loadTx(){
+const TX_TTL = 4 * 3600e3;   // how often this phone asks the Worker (about every 4 hours)
+async function loadTx(force){
   txErr = '';
+  let cached = null;
+  try { cached = JSON.parse(localStorage.getItem('tx') || 'null'); } catch(e){}
+  if (cached && cached.src !== D.espnProxy) cached = null;
+  if (!force && cached && Date.now() - cached.ts < TX_TTL){ TX = cached.data; txLive = true; txAt = cached.ts; return; }
   if (D.espnProxy){
     try {
       const r = await fetch(`${D.espnProxy}?view=transactions&leagueId=${D.leagueId}&season=${D.season}`);
       const j = await r.json().catch(() => null);
-      if (Array.isArray(j)){ TX = j; txLive = true; return; }
+      if (Array.isArray(j)){
+        TX = j; txLive = true; txAt = Date.now();
+        try { localStorage.setItem('tx', JSON.stringify({ts:txAt, src:D.espnProxy, data:j})); } catch(e){}
+        return;
+      }
       txErr = (j && j.error) || 'HTTP ' + r.status;
     } catch(e){ txErr = 'could not reach the Worker'; }
+    if (cached){ TX = cached.data; txLive = true; txAt = cached.ts; return; }
   }
   TX = sampleTx(D.leagueId, D.teams);
 }
@@ -327,8 +336,34 @@ function renderTx(){
   $('txList').innerHTML = TX.map(txRow).join('') || '<p class="muted" style="margin:0">No transactions yet this season.</p>';
   $('homeTx').innerHTML = TX.slice(0,3).map(txRow).join('') || '<p class="muted" style="margin:0">No transactions yet.</p>';
   $('txBadge').style.display = txLive ? 'none' : '';
-  $('txNote').textContent = txLive ? 'Live from ESPN.' : 'Sample data.' + (txErr ? ' Live feed problem: ' + txErr + '.' : '');
+  const when = txAt ? new Date(txAt).toLocaleString([], {weekday:'short', hour:'numeric', minute:'2-digit'}) : '';
+  $('txNote').textContent = txLive
+    ? 'Live from ESPN. Last checked ' + when + '. Rechecks about every 4 hours.' + (txErr ? ' Latest refresh failed: ' + txErr + '.' : '')
+    : 'Sample data.' + (txErr ? ' Live feed problem: ' + txErr + '.' : '');
 }
+$('txRefresh').onclick = async () => {
+  const b = $('txRefresh'); b.textContent = 'Checking...';
+  await loadTx(true); renderTx(); b.textContent = 'Refresh now';
+};
+document.addEventListener('visibilitychange', () => { if (!document.hidden && txLive && Date.now() - txAt > TX_TTL) loadTx().then(renderTx); });
+
+/* ---------- themes ---------- */
+const THEMES = [
+  ['dark','Dark','#0B0C0E','#ECEDEF'], ['light','Light','#F4F4F2','#0F1113'],
+  ['bengals-orange','Bengals Orange','#FB4F14','#000000'], ['bengals-black','Bengals Black','#000000','#FB4F14'],
+  ['ravens-purple','Ravens Purple','#241773','#9E7C0C'], ['ravens-black','Ravens Black','#000000','#241773']
+];
+function applyTheme(id, save){
+  if (!THEMES.some(t => t[0] === id)) id = 'dark';
+  document.documentElement.dataset.theme = id;
+  if (save){ try { localStorage.setItem('theme', id); } catch(e){} }
+  const c = getComputedStyle(document.documentElement).getPropertyValue('--head-bg').trim();
+  if (c) document.querySelector('meta[name="theme-color"]').content = c;
+  document.querySelectorAll('.th').forEach(b => b.classList.toggle('on', b.dataset.id === id));
+}
+$('themes').innerHTML = THEMES.map(t => `<button class="th" data-id="${t[0]}"><i style="background:linear-gradient(90deg,${t[2]} 50%,${t[3]} 50%)"></i>${t[1]}</button>`).join('');
+$('themes').addEventListener('click', e => { const b = e.target.closest('.th'); if (b) applyTheme(b.dataset.id, true); });
+applyTheme(document.documentElement.dataset.theme, false);
 
 /* ---------- misc ---------- */
 $('copyId').onclick = async () => {

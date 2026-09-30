@@ -49,3 +49,10 @@ Change `APP_VERSION` in `index.html` (and `VERSION` in `sw.js` to match), commit
 ## Where the data files can live
 The app looks for `data/league.json` and `data/champions.json` first, then `league.json` and `champions.json` in the main folder.
 If the app shows a red bar, it lists the exact addresses it tried.
+
+## Transaction checks
+Each phone asks the Worker at most once every 4 hours (about morning, afternoon, evening and night) and remembers the last result.
+The Moves tab has a Refresh now button. To change the timing, edit `TX_TTL` in `index.html`.
+
+## Themes
+Settings > Themes: Dark, Light, Bengals Orange, Bengals Black, Ravens Purple, Ravens Black. Each phone remembers its choice.
