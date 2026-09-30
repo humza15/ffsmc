@@ -1,5 +1,5 @@
 // Bump VERSION with each release (keep it equal to APP_VERSION in index.html).
-const VERSION = '0.3.2';
+const VERSION = '0.3.3';
 const CACHE = 'suckmacock-' + VERSION;
 const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'data/league.json', 'data/champions.json',
   'icons/icon-192.png', 'icons/apple-touch-icon.png'];
