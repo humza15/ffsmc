@@ -2,7 +2,6 @@
   "name": "SUCKMACOCK",
   "leagueId": "1944871",
   "season": 2026,
-  "week": 4,
   "franchiseStatsUrl": "https://fantasy-franchise.com/nfl/espn/1944871/",
   "githubRepo": "",
   "espnProxy": "https://restless-limit-54df.humza15.workers.dev",
@@ -16,8 +15,9 @@
       "gm": "Humza",
       "team": ""
     },
-    "note": ""
+    "week": 4
   },
   "rankings": [],
-  "history": []
+  "history": [],
+  "seasonStart": "2026-09-08"
 }

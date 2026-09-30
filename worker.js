@@ -37,12 +37,33 @@ export default {
       const name = {};
       (lg.teams || []).forEach(t => name[t.id] = t.name || `${t.location || ''} ${t.nickname || ''}`.trim());
 
+      const first = {};
+      (lg.members || []).forEach(m => first[m.id] = m.firstName || m.displayName);
+      const info = t => {
+        const r = (t.record && t.record.overall) || {};
+        const g = (r.wins || 0) + (r.losses || 0) + (r.ties || 0);
+        return { id: t.id, team: name[t.id], gm: (t.owners || []).map(o => first[o]).filter(Boolean).join(', '),
+          record: `${r.wins || 0}-${r.losses || 0}` + (r.ties ? `-${r.ties}` : ''), wins: r.wins || 0,
+          ppg: g ? Math.round((r.pointsFor || 0) / g * 10) / 10 : 0 };
+      };
+      const byId = {};
+      (lg.teams || []).forEach(t => byId[t.id] = info(t));
+
       if (q.get('view') === 'teams') {
-        const first = {};
-        (lg.members || []).forEach(m => first[m.id] = m.firstName || m.displayName);
-        return done(json((lg.teams || []).map(t => ({
-          id: t.id, name: name[t.id], owner: (t.owners || []).map(o => first[o]).filter(Boolean).join(', ')
-        })), cors));
+        return done(json(Object.values(byId).map(t => ({ id: t.id, name: t.team, owner: t.gm, record: t.record, ppg: t.ppg })), cors));
+      }
+
+      // Game of the Week: the matchup this week with the best combined records (similar scoring breaks ties).
+      if (q.get('view') === 'gotw') {
+        const week = +q.get('week') || cur;
+        const mj = await ask(`?view=mMatchupScore&scoringPeriodId=${week}`);
+        const games = (mj.schedule || [])
+          .filter(m => m.matchupPeriodId === week && m.home && m.away && byId[m.home.teamId] && byId[m.away.teamId])
+          .map(m => { const a = byId[m.home.teamId], b = byId[m.away.teamId];
+            return { a, b, score: (a.wins + b.wins) * 100 - Math.abs(a.ppg - b.ppg) + (a.ppg + b.ppg) / 10 }; })
+          .sort((x, y) => y.score - x.score);
+        if (!games.length) return json({ error: 'no matchups found for week ' + week }, cors, 404);
+        return done(json({ week, a: games[0].a, b: games[0].b, games: games.length }, cors));
       }
 
       // ESPN only returns transactions when asked one scoring period (week) at a time. Week 0 is the preseason.

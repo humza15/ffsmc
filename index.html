@@ -74,6 +74,11 @@ nav button.on{color:var(--link)}
 .th{background:var(--surface);border:1px solid var(--line);border-radius:2px;padding:8px;color:var(--ink);font:600 12px var(--sans);text-align:left;letter-spacing:.02em}
 .th i{display:block;height:26px;margin-bottom:8px;border:1px solid var(--line)}
 .th.on{border-color:var(--link);box-shadow:inset 0 0 0 1px var(--link)}
+.gotw{cursor:pointer}
+.gotw .tap{margin-top:12px;text-align:center;font-size:10px;letter-spacing:.14em;text-transform:uppercase}
+#sheet{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:7;align-items:flex-end}
+#sheet.on{display:flex}
+#sheet .pane{width:100%;max-width:640px;margin:0 auto;background:var(--surface);border-top:2px solid var(--accent);padding:18px 16px calc(env(safe-area-inset-bottom,0px) + 18px);max-height:85%;overflow:auto}
 #err{display:none;background:#B23A2E;color:#fff;font-size:13px;padding:8px 16px}
 #upd{display:none;position:fixed;left:12px;right:12px;top:calc(env(safe-area-inset-top,0px) + 8px);z-index:9;background:var(--accent);color:var(--accent-ink);border-radius:2px;padding:12px 14px;align-items:center;justify-content:space-between;gap:10px;box-shadow:0 8px 24px rgba(0,0,0,.35);font-size:13px}
 #upd.on{display:flex}
@@ -86,6 +91,7 @@ nav button.on{color:var(--link)}
 <body>
 <div id="upd"><span>A new version is ready.</span><button id="updBtn">Update</button></div>
 <div id="zoom"><img id="zoomImg" alt=""></div>
+<div id="sheet"><div class="pane" id="sheetBody"></div></div>
 
 <header><h1 id="lname">SUCKMACOCK</h1><p id="lsub">Fantasy football hub</p></header>
 <div id="err"></div>
@@ -93,36 +99,36 @@ nav button.on{color:var(--link)}
 <main>
   <section id="home">
     <div class="gotw" id="gotw"></div>
-    <h2>Latest power rankings</h2>
+    <h2>Latest power rankings 📈</h2>
     <div class="card rank" id="homeRank"></div>
-    <h2>Recent moves</h2>
+    <h2>Recent moves 🔄</h2>
     <div class="card" id="homeTx"></div>
     <a class="btn" id="homeEspn" target="_blank" rel="noopener">Open league in ESPN</a>
   </section>
 
   <section id="rankings">
-    <h2>Power rankings</h2>
+    <h2>Power rankings 📈</h2>
     <div id="rankView"></div>
   </section>
 
   <section id="history">
-    <h2>Champions Corner</h2>
+    <h2>Champions Corner 🏆</h2>
     <div id="champs"></div>
     <div id="hist"></div>
     <a class="btn alt" id="franchise" target="_blank" rel="noopener">Franchise statistics</a>
   </section>
 
   <section id="moves">
-    <h2>Transactions <span class="badge" id="txBadge">SAMPLE</span></h2>
+    <h2>Transactions 🔄 <span class="badge" id="txBadge">SAMPLE</span></h2>
     <div class="card" id="txList"></div>
     <p class="muted" id="txNote"></p>
     <button class="btn alt" id="txRefresh">Refresh now</button>
   </section>
 
   <section id="espn">
-    <h2>Themes</h2>
+    <h2>Themes 🎨</h2>
     <div class="themes" id="themes"></div>
-    <h2>League</h2>
+    <h2>League 🏈</h2>
     <div class="card">
       <h3>ESPN league <span id="lid"></span></h3>
       <p class="muted" style="margin:0 0 12px">Opens the ESPN Fantasy app if it is installed, otherwise Safari.</p>
@@ -148,8 +154,9 @@ nav button.on{color:var(--link)}
 </nav>
 
 <script>
-const APP_VERSION = '0.3.3';
+const APP_VERSION = '0.4.0';
 const CHANGELOG = [
+  ['0.4.0', 'Week updates itself every Tuesday, Game of the Week picks itself and opens a preview, header emojis.'],
   ['0.3.3', 'Home screen logo is now built into the app so it always shows.'],
   ['0.3.2', 'New minimal design, Settings tab with six themes, new SMC logo, transactions checked every 4 hours, champion removed from Home.'],
   ['0.3.1', 'Data files load from the data folder or the main folder, clearer error messages, ESPN Worker reads transactions week by week.'],
@@ -158,7 +165,7 @@ const CHANGELOG = [
   ['0.1.0', 'First release: rankings, champions corner, history, sample transactions, ESPN launcher, update prompts.']
 ];
 const $ = id => document.getElementById(id);
-let D = null, CH = [], TX = [], TEAMS = [], RK = [], txLive = false, txErr = '', txAt = 0, champYear = null;
+let D = null, CH = [], TX = [], TEAMS = [], RK = [], txLive = false, txErr = '', txAt = 0, champYear = null, PREV = {}, GOTW = null, WEEK = 0;
 
 /* ---------- tabs ---------- */
 function go(t){
@@ -186,12 +193,14 @@ async function getJSON(paths){
 }
 async function load(){
   try { D = await getJSON(['data/league.json', 'league.json']); }
-  catch(e){ showErr('Could not load league.json. ' + e.message); D = {name:'SUCKMACOCK', leagueId:'1944871', season:2026, week:4, teams:[], rankings:[], history:[]}; }
+  catch(e){ showErr('Could not load league.json. ' + e.message); D = {name:'SUCKMACOCK', leagueId:'1944871', season:2026, teams:[], rankings:[], history:[]}; }
   try { CH = await getJSON(['data/champions.json', 'champions.json']); }
   catch(e){ showErr('Could not load champions.json. ' + e.message); CH = []; }
+  try { PREV = await getJSON(['data/previews.json', 'previews.json']); } catch(e){ PREV = {}; }
+  WEEK = currentWeek();
   render();
   loadRankings().then(r => { RK = r; renderRankings(); });
-  loadTeams().then(renderGotw);
+  Promise.all([loadTeams(), loadGotw()]).then(renderGotw);
   loadTx().then(renderTx);
 }
 const espnUrl = () => 'https://fantasy.espn.com/football/league?leagueId=' + D.leagueId;
@@ -204,12 +213,12 @@ function imgOrPlaceholder(r){
 
 function render(){
   $('lname').textContent = D.name;
-  $('lsub').textContent = D.season + ' NFL Season - Week ' + D.week;
+  updateWeek();
   $('lid').textContent = '#' + D.leagueId;
   ['homeEspn','espnOpen'].forEach(i => $(i).href = espnUrl());
   $('franchise').href = D.franchiseStatsUrl || '#';
 
-  $('hist').innerHTML = (D.history || []).length ? '<h2 style="margin-top:20px">League history</h2>' + D.history.map(h => `<div class="card"><h3>${esc(h.title)}</h3><p style="margin:0">${esc(h.body)}</p></div>`).join('') : '';
+  $('hist').innerHTML = (D.history || []).length ? '<h2 style="margin-top:20px">League history 📜</h2>' + D.history.map(h => `<div class="card"><h3>${esc(h.title)}</h3><p style="margin:0">${esc(h.body)}</p></div>`).join('') : '';
   renderChamps();
   renderGotw();
 
@@ -248,16 +257,70 @@ $('champs').addEventListener('click', e => {
   champYear = y ? +y.dataset.y : null;
   renderChamps(); document.querySelector('main').scrollTop = 0;
 });
-function renderGotw(){
-  const g = D.gameOfTheWeek;
-  if (!g){ $('gotw').style.display = 'none'; return; }
-  const side = m => {
-    const t = m.team || (TEAMS.find(x => (x.owner || '').toLowerCase().includes(m.gm.toLowerCase())) || {}).name || '';
-    return `<div><div class="gm">${esc(m.gm)}</div><div class="tm">${esc(t || 'Team name TBD')}</div></div>`;
-  };
-  $('gotw').style.display = '';
-  $('gotw').innerHTML = `<div class="hd"><b>Game of the Week</b><span>Week ${D.week}</span></div><div class="vs">${side(g.a)}<span class="x">vs</span>${side(g.b)}</div>${g.note ? `<p class="muted" style="margin:12px 0 0">${esc(g.note)}</p>` : ''}`;
+// The week rolls over every Tuesday at 6 AM (after Monday Night Football). seasonStart is the Tuesday before Week 1.
+function currentWeek(){
+  const start = new Date((D.seasonStart || '2026-09-08') + 'T06:00:00');
+  const w = Math.floor((Date.now() - start) / (7 * 864e5)) + 1;
+  return w < 1 ? 0 : Math.min(w, 18);
 }
+function updateWeek(){
+  WEEK = currentWeek();
+  $('lsub').textContent = D.season + ' NFL Season - ' + (WEEK ? 'Week ' + WEEK : 'Preseason');
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden || !D) return;
+  const before = WEEK; updateWeek();
+  if (WEEK !== before) loadGotw().then(renderGotw);
+});
+// A hand-picked matchup in league.json (with a matching week) wins. Otherwise the Worker picks the best matchup.
+async function loadGotw(){
+  GOTW = null;
+  const g = D.gameOfTheWeek;
+  if (g && g.week === WEEK){ GOTW = {a:{...g.a}, b:{...g.b}}; return; }
+  if (!D.espnProxy || !WEEK) return;
+  const key = 'gotw-' + D.season + '-' + WEEK;
+  try { const c = JSON.parse(localStorage.getItem(key) || 'null'); if (c && Date.now() - c.ts < TX_TTL){ GOTW = c.data; return; } } catch(e){}
+  try {
+    const j = await (await fetch(`${D.espnProxy}?view=gotw&week=${WEEK}&season=${D.season}`)).json();
+    if (j && j.a && j.b){ GOTW = j; try { localStorage.setItem(key, JSON.stringify({ts:Date.now(), data:j})); } catch(e){} }
+  } catch(e){}
+}
+function enrich(m){
+  if (!m.gm) return m;
+  const t = TEAMS.find(x => (x.owner || '').toLowerCase().includes(m.gm.toLowerCase()));
+  return t ? {...m, team: m.team || t.name, record: m.record || t.record, ppg: m.ppg || t.ppg} : m;
+}
+const gotwSide = m => `<div><div class="gm">${esc(m.gm || m.team)}</div><div class="tm">${esc(m.team || 'Team name TBD')}</div>${m.record ? `<div class="tm">${esc(m.record)}</div>` : ''}</div>`;
+function renderGotw(){
+  if (!GOTW){ $('gotw').style.display = 'none'; return; }
+  GOTW.ea = enrich(GOTW.a); GOTW.eb = enrich(GOTW.b);
+  $('gotw').style.display = '';
+  $('gotw').innerHTML = `<div class="hd"><b>Game of the Week 🔥</b><span>Week ${WEEK}</span></div><div class="vs">${gotwSide(GOTW.ea)}<span class="x">vs</span>${gotwSide(GOTW.eb)}</div><div class="muted tap">Tap for the preview</div>`;
+}
+// A written preview in data/previews.json wins. Otherwise a short one is built from records and scoring.
+function autoPreview(a, b){
+  const [x, y] = (a.ppg || 0) >= (b.ppg || 0) ? [a, b] : [b, a];
+  const nm = m => m.gm || m.team, rec = m => m.record ? ' (' + m.record + ')' : '';
+  const n = WEEK + (nm(a) || '').length + (nm(b) || '').length;
+  const s1 = [`${nm(x)}${rec(x)} walks in as the team to beat and knows it.`, `${nm(x)}${rec(x)} has the league's attention, and the group chat has already heard about it.`][n % 2];
+  const s2 = [`${nm(y)}${rec(y)} is the underdog, which is exactly how they like to be underestimated.`, `${nm(y)}${rec(y)} needs this one, and desperation has won stranger games in this league.`][(n + 1) % 2];
+  const gap = Math.abs((x.ppg || 0) - (y.ppg || 0));
+  const s3 = x.ppg && y.ppg ? (gap < 8 ? `Only ${gap.toFixed(1)} points a game separate them, so expect this to go down to Monday night.` : 'The scoring gap says this should not be close, but that has never stopped anyone here from talking.') : 'Circle this one for Monday night.';
+  return `${s1} ${s2} ${s3}`;
+}
+function openSheet(){
+  if (!GOTW) return;
+  const manual = PREV[D.season + '-' + WEEK];
+  const text = manual || autoPreview(GOTW.ea, GOTW.eb);
+  $('sheetBody').innerHTML = `<div class="gotw" style="border:0;padding:0;margin:0;background:none;cursor:default"><div class="hd"><b>Game of the Week 🔥</b><span>Week ${WEEK}</span></div><div class="vs">${gotwSide(GOTW.ea)}<span class="x">vs</span>${gotwSide(GOTW.eb)}</div></div>
+    <p class="muted" style="margin:18px 0 4px">${manual ? 'Preview' : 'Auto preview'}</p>
+    <p style="margin:0 0 18px;line-height:1.6">${esc(text)}</p>
+    <a class="btn alt" href="https://fantasy.espn.com/football/league/scoreboard?leagueId=${D.leagueId}" target="_blank" rel="noopener">Open scoreboard in ESPN</a>
+    <button class="btn" id="sheetClose" style="margin-top:8px">Close</button>`;
+  $('sheet').classList.add('on');
+}
+$('gotw').addEventListener('click', openSheet);
+$('sheet').addEventListener('click', e => { if (e.target.id === 'sheet' || e.target.id === 'sheetClose') $('sheet').classList.remove('on'); });
 async function loadTeams(){
   if (!D.espnProxy) return [];
   try { const j = await (await fetch(`${D.espnProxy}?view=teams&season=${D.season}`)).json(); if (Array.isArray(j)) TEAMS = j; } catch(e){}
@@ -281,9 +344,9 @@ async function loadRankings(){
   return list.sort((a,b) => b.name.localeCompare(a.name, undefined, {numeric:true}));
 }
 function renderRankings(){
-  $('rankView').innerHTML = RK.map(r => `<div class="card rank"><p class="muted" style="margin-top:0">${esc(r.caption)}</p>${imgOrPlaceholder(r)}</div>`).join('')
+  $('rankView').innerHTML = RK.map(r => `<div class="card rank"><p class="muted" style="margin-top:0">${esc(r.caption)} 📈</p>${imgOrPlaceholder(r)}</div>`).join('')
     || '<div class="card"><div class="ph">Upload images to the rankings folder</div></div>';
-  $('homeRank').innerHTML = RK[0] ? `<p class="muted" style="margin-top:0">${esc(RK[0].caption)}</p>${imgOrPlaceholder(RK[0])}` : '<div class="ph">No rankings posted yet</div>';
+  $('homeRank').innerHTML = RK[0] ? `<p class="muted" style="margin-top:0">${esc(RK[0].caption)} 📈</p>${imgOrPlaceholder(RK[0])}` : '<div class="ph">No rankings posted yet</div>';
 }
 
 /* ---------- transactions ---------- */

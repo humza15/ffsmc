@@ -56,3 +56,10 @@ The Moves tab has a Refresh now button. To change the timing, edit `TX_TTL` in `
 
 ## Themes
 Settings > Themes: Dark, Light, Bengals Orange, Bengals Black, Ravens Purple, Ravens Black. Each phone remembers its choice.
+
+## Week and Game of the Week
+- The week in the header rolls over every Tuesday at 6 AM. Set `seasonStart` in `data/league.json` to the Tuesday before Week 1 each season.
+- Game of the Week is picked by the Worker each week (best combined records, similar scoring breaks ties).
+  To hand-pick one, set `gameOfTheWeek` in `data/league.json` with a matching `week`.
+- Tapping the banner opens a preview. Add your own text to `data/previews.json` under `"season-week"` (for example `"2026-5"`).
+  Without one, the app builds a short preview from records and scoring.
