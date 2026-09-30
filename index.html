@@ -141,6 +141,7 @@ nav button.on{color:var(--link)}
       <ul class="log muted" id="changelog"></ul>
       <button class="btn alt" id="checkUpd" style="margin-top:12px">Check for updates</button>
       <p class="muted" id="updMsg"></p>
+      <p class="muted" id="dataNote"></p>
     </div>
   </section>
 </main>
@@ -154,8 +155,9 @@ nav button.on{color:var(--link)}
 </nav>
 
 <script>
-const APP_VERSION = '0.4.0';
+const APP_VERSION = '0.4.1';
 const CHANGELOG = [
+  ['0.4.1', 'Built-in copies of the data files so the app never comes up empty if a file goes missing.'],
   ['0.4.0', 'Week updates itself every Tuesday, Game of the Week picks itself and opens a preview, header emojis.'],
   ['0.3.3', 'Home screen logo is now built into the app so it always shows.'],
   ['0.3.2', 'New minimal design, Settings tab with six themes, new SMC logo, transactions checked every 4 hours, champion removed from Home.'],
@@ -177,6 +179,8 @@ function go(t){
 $('tabs').addEventListener('click', e => { const b = e.target.closest('button'); if (b) go(b.dataset.t); });
 
 /* ---------- data ---------- */
+// Built-in copies, used only if the data files can't be found. The files in the data folder win when present.
+const DEFAULTS = {"league":{"name":"SUCKMACOCK","leagueId":"1944871","season":2026,"franchiseStatsUrl":"https://fantasy-franchise.com/nfl/espn/1944871/","githubRepo":"","espnProxy":"https://restless-limit-54df.humza15.workers.dev","teams":[],"gameOfTheWeek":{"a":{"gm":"Kashif","team":""},"b":{"gm":"Humza","team":""},"week":4},"rankings":[],"history":[],"seasonStart":"2026-09-08"},"champions":[{"year":2025,"gm":"Waleed","team":"Swag Waleed 😧😇😂","record":"","recap":"","quote":"","second":"","third":""},{"year":2024,"gm":"Kashif","team":"Show Me Your TDs","record":"9-5","recap":"After finishing the regular season with a 9-5 record, bolstered largely in part from some savvy trade deadline trades (trading Mahomes and Evans for Josh Allen and Amari Cooper) and a lucky schedule (only ranked 6th in scoring), GM Kashif moved into round 1 of the playoffs trying to prove he belonged. In a commanding Round 1 matchup, he destroyed Rohan 177 to 110 due to a 41 point performance by Josh Allen. Round 2 saw him up against #1 Seed Ayaz (10-4), whom he also decided to absolutely curbstomp 176-124 this time led by a 40 point performance by Jonathan Taylor and 34 points by Jayden Daniels. A Championship round saw him up against reigning league winner Daniyal whom he dominated without consent 196-140 led by >19 point performances by 7 members of his team - an all-around team win. With a roster led by the TE3 Kittle, QB5 Jayden, QB2 Josh Allen, and RB8 Cook, victory was never in doubt.","quote":"When people told me I wasn't going to win, I listened to the one person who told me I was: me.","second":"Tough Love :( (Daniyal, 6-8)","third":"Prank Invasion (Zohabe, 9-5)"},{"year":2023,"gm":"Daniyal","team":"Tough Love :(","record":"10-4","recap":"A dominating regular season led to a dominating Finals win culminating in this franchise's second trophy. After a 10-4 regular season led in part by RB2 Breece Hall and their strong QB duo of Mahomes and Love (#8 and #5 respectively), GM Daniyal and his team scored a much-needed BYE week in Round 1 of the playoffs. Round 2 saw them flip the switch in a decisive win 159 to 111 against GM Saaf's team due to Breece Hall's continued MVP performance (43 points). Riding the hot hand, the Championship game saw GM Daniyal face off against GM Rohan - a first time finals appearance for the latter. In an absolute cinematic thriller, the experience and poise of Tough Love ended up being the deciding factor as they squeaked away with a 2 point victory (153 to 151) due to a Superman performance of Davante Adams (38 points). And thus, GM Daniyal became the first GM to win 2 rings.","quote":"Amidst a league of boys copping wedding rings, stands a man copping championship rings 💍💍 #EarnednotGiven","second":"Amon Ra Doggin It (Rohan, 8-6)","third":"Galactic Geckos (Saaf, 9-5)"},{"year":2022,"gm":"Saaf","team":"Galactic Geckos","record":"8-5","recap":"A 5th place finish in the regular season landed this 8-5 team firmly in the playoffs due in part to the late surge by new-49er Christian McCaffrey. With contributions from Josh Allen (QB2), Aaron Jones (RB8), and DeVonta Smith (WR9), it certainly lessened the load off of TE1 Kelce's shoulders. A first round matchup against 8-5 Kashif saw GM Saaf's team pull away by over 20 points. A second-round matchup against Zohabe saw Saaf victorious 163-145 due to a SuperMan performance by Josh Allen (36 points). The championship game saw a similar script against first-time finalist Dheeraj as Saaf was carried by a 31-point Herculean effort by DeVonta Smith securing the first ring for this team 143-127. No winner in league history has been able to win 2 rings in one year; Galactic Geckos broke records on and off the field and became the first team to secure 2 rings in one year. A remarkable and matrimonial end to a magical season for GM Saaf.","quote":"When you win, you attract nazr, when you lose, you learn sabr.","second":"Cee Deez Nuts (Dheeraj, 9-4)","third":"Mr Theil Your Girl (Rohan, 6-7)"},{"year":2021,"gm":"Umaize","team":"Penguins of Madagascar","record":"10-3","recap":"After finishing the regular season with the second best record of all-time (10-3), Penguins of Madagascar followed up with an equally impressive playoff performance. With GM Umaize Savani gaining some Bay Area knowledge, he relied on the talents of essentially the entire Buccaneers offense and Davante Adams. A 5 game win streak to end off the regular season helped him secure the 1 seed and an early berth to the semifinals where he dismantled Daniyal 105 to 54 (likely the lowest playoff score we'll witness). In the finals, he matched up against the defending champion Humza, who he obliterated 163 to 125 in a game that was never in any doubt while being led by Finals co-MVPs Joe Mixon and Davante Adams. GM Umaize decision to relocate his team to the Bay Area seems to be paying dividends already.","quote":"You know, I'm something of a sports analyst myself.","second":"Certified Down Bad (Humza, 7-6)","third":"Swag Waleed (Waleed, 6-6)"},{"year":2020,"gm":"Humza","team":"2 Girls 1 Kupp","record":"7-5","recap":"A ragtag team led by the consistent efforts of Dalvin Cook and DeAndre Hopkins managed to claw its way into a 7-5 regular season record, good enough for the 4th seed. This team never had a consistent QB, they found themselves trotting out the likes of Gardener Minshew and Tua Tagovailoa...until TE Taysom Hill learned to throw the ball. They breezed thru the playoffs, defeating Zohabe by 31 points in the first round, before following it up with an almost 60 point victory against Dheeraj. They found no resistance to their conquest in the finals as they defeated Saaf 183 to 135 led by Finals MVP Jalen Hurts who dropped 38 points in his first and only game as a fantasy starter. In a season riddled with COVID, 2 Girls 1 Kupp came away with the Mickey Mouse ring.","quote":"I may be down bad, but at least I'm not dog-water at fantasy like the rest of the league.","second":"Green Beans (Saaf, 7-5)","third":"I Hate Kaale (Dheeraj, 8-4)"},{"year":2019,"gm":"Daniyal","team":"@TyreekandMorty","record":"8-4","recap":"A strong regular season saw this team finish the regular season with a 8-4 record and the second seed. Strong seasons by both Ezekiel Elliott and Aaron Jones carried them for most of their journey, despite wasting roster space holding Antonio Brown (clinically insane) for 7 weeks of the season. They had a small scare facing the 6th seeded Slump Boys in the semi-finals winning narrowly 125.68 to 120.66 behind a strong 31 point performance by Aaron Jones. In a Finals matchup that was hyped up beyond belief through the use of controversial memes, @ TyreekandMorty had no trouble abusing and bullying Swim with Charks as they achieved victory 152.96 to 106.44, behind a 31 and 24 point performances by Elliott and Ryan Tannehill respectively.","quote":"Virginity is not dignity, it is just lack of opportunity.","second":"Swim with Charks (Humza, 6-6)","third":"Shlump Boyz (Saaf, 6-6)"},{"year":2018,"gm":"Waleed","team":"Baby Johnny","record":"6-6","recap":"With a team led by league MVP Patrick Mahomes and Ezekiel Elliott, Baby Johnny snuck his way into the playoffs with a 6-6 record - good enough for the 5th seed. After dismantling the #4 seed, Team Khanzada, by a score of 172.3 to 111.6, Baby Johnny went on to again destroy the #1 seed Team Malik 175.1 to 150.6. A championship game versus the ever-religious Team Bakali was expected to be a hard affair, but, alas, it wasn't. Baby Johnny would go on to win 147.8 to 74.1 - nearly doubling his opponents points, securing his place as the first champion of the suckMACOCK league.","quote":"Don't cry because it's over, smile because it happened.","second":"Team Bakali (Zohabe, 8-4)","third":"Tater Todds (Humza, 6-6)"}],"previews":{"2026-4":"Kashif is a 2024 champion who has yet to let the group chat forget it, and he'll be leaning on that confidence all week. Humza owns a ring of his own from 2020 and has built a whole brand on being \"down bad\" right up until he ruins your Sunday. Whoever loses will spend the next seven days claiming they were resting starters."}};
 function showErr(m){ const e = $('err'); e.textContent = (e.textContent ? e.textContent + ' ' : '') + m; e.style.display = 'block'; }
 window.addEventListener('error', ev => showErr('Script error: ' + ev.message));
 async function getJSON(paths){
@@ -191,14 +195,24 @@ async function getJSON(paths){
   }
   throw new Error(fails.join('; '));
 }
+let dataNote = '';
+async function loadData(name, fallback, missing){
+  try { return await getJSON(['data/' + name, name]); }
+  catch(e){
+    missing.push(name);
+    if (!/returned 404/.test(e.message)) showErr(name + ' could not be read, so the built-in copy is showing. ' + e.message);
+    return JSON.parse(JSON.stringify(fallback));
+  }
+}
 async function load(){
-  try { D = await getJSON(['data/league.json', 'league.json']); }
-  catch(e){ showErr('Could not load league.json. ' + e.message); D = {name:'SUCKMACOCK', leagueId:'1944871', season:2026, teams:[], rankings:[], history:[]}; }
-  try { CH = await getJSON(['data/champions.json', 'champions.json']); }
-  catch(e){ showErr('Could not load champions.json. ' + e.message); CH = []; }
-  try { PREV = await getJSON(['data/previews.json', 'previews.json']); } catch(e){ PREV = {}; }
+  const missing = [];
+  D = await loadData('league.json', DEFAULTS.league, missing);
+  CH = await loadData('champions.json', DEFAULTS.champions, missing);
+  PREV = await loadData('previews.json', DEFAULTS.previews, missing);
+  dataNote = missing.length ? 'Showing built-in copies of ' + missing.join(', ') + '. Put the files in a folder named data in your GitHub repo so your edits show up.' : '';
   WEEK = currentWeek();
   render();
+  $('dataNote').textContent = dataNote;
   loadRankings().then(r => { RK = r; renderRankings(); });
   Promise.all([loadTeams(), loadGotw()]).then(renderGotw);
   loadTx().then(renderTx);

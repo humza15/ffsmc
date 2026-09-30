@@ -63,3 +63,7 @@ Settings > Themes: Dark, Light, Bengals Orange, Bengals Black, Ravens Purple, Ra
   To hand-pick one, set `gameOfTheWeek` in `data/league.json` with a matching `week`.
 - Tapping the banner opens a preview. Add your own text to `data/previews.json` under `"season-week"` (for example `"2026-5"`).
   Without one, the app builds a short preview from records and scoring.
+
+## Built-in data copies
+`index.html` carries copies of the three data files. If a file can't be found the app uses the built-in copy and says so in Settings > About.
+When a file is found in the data folder it always wins, so your edits still take effect.
