@@ -67,3 +67,8 @@ Settings > Themes: Dark, Light, Bengals Orange, Bengals Black, Ravens Purple, Ra
 ## Built-in data copies
 `index.html` carries copies of the three data files. If a file can't be found the app uses the built-in copy and says so in Settings > About.
 When a file is found in the data folder it always wins, so your edits still take effect.
+
+## League tab
+Power rankings (tap a week chip for earlier ones), Team of the Week (last completed week), standings with playoff odds, and transactions.
+Team of the Week covers every rostered player, started or benched. Free agents are not in the league data, so they can't appear.
+Playoff odds are the app's own simulation, because ESPN does not publish its odds.

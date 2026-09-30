@@ -6,6 +6,11 @@ const API = 'https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons';
 // ESPN "recent activity" message codes (fallback feed)
 const ACTIVITY = { 178: ['FREEAGENT', 'ADD'], 180: ['WAIVER', 'ADD'], 179: ['FREEAGENT', 'DROP'], 181: ['FREEAGENT', 'DROP'], 239: ['FREEAGENT', 'DROP'] };
 
+const POS = { 1: 'QB', 2: 'RB', 3: 'WR', 4: 'TE', 5: 'K', 16: 'D/ST' };
+const NFL = { 1: 'ATL', 2: 'BUF', 3: 'CHI', 4: 'CIN', 5: 'CLE', 6: 'DAL', 7: 'DEN', 8: 'DET', 9: 'GB', 10: 'TEN', 11: 'IND', 12: 'KC', 13: 'LV', 14: 'LAR',
+  15: 'MIA', 16: 'MIN', 17: 'NE', 18: 'NO', 19: 'NYG', 20: 'NYJ', 21: 'PHI', 22: 'ARI', 23: 'PIT', 24: 'LAC', 25: 'SF', 26: 'SEA', 27: 'TB', 28: 'WSH',
+  29: 'CAR', 30: 'JAX', 33: 'BAL', 34: 'HOU' };
+
 export default {
   async fetch(req, env, ctx) {
     const cors = { 'Access-Control-Allow-Origin': env.ALLOW_ORIGIN || '*', 'Access-Control-Allow-Headers': '*' };
@@ -64,6 +69,46 @@ export default {
           .sort((x, y) => y.score - x.score);
         if (!games.length) return json({ error: 'no matchups found for week ' + week }, cors, 404);
         return done(json({ week, a: games[0].a, b: games[0].b, games: games.length }, cors));
+      }
+
+      // Standings data. The app works out playoff odds itself (keeps the Worker fast).
+      if (q.get('view') === 'standings') {
+        const sj = await ask('?view=mSettings&view=mMatchupScore');
+        const ss = (sj.settings && sj.settings.scheduleSettings) || {};
+        const regWeeks = ss.matchupPeriodCount || 14;
+        const remaining = (sj.schedule || [])
+          .filter(m => m.winner === 'UNDECIDED' && m.matchupPeriodId <= regWeeks && m.home && m.away)
+          .map(m => ({ a: m.home.teamId, b: m.away.teamId, w: m.matchupPeriodId }));
+        const teams = (lg.teams || []).map(t => {
+          const r = (t.record && t.record.overall) || {};
+          return { ...byId[t.id], losses: r.losses || 0, ties: r.ties || 0, pf: Math.round((r.pointsFor || 0) * 10) / 10,
+            pa: Math.round((r.pointsAgainst || 0) * 10) / 10, games: (r.wins || 0) + (r.losses || 0) + (r.ties || 0) };
+        });
+        return done(json({ week: cur, regWeeks, playoffTeams: ss.playoffTeamCount || 6, teams, remaining }, cors));
+      }
+
+      // Team of the Week: best QB, 2 RB, 2 WR, TE and K of the week among every rostered player, started or benched.
+      if (q.get('view') === 'totw') {
+        const week = +q.get('week') || Math.max(1, cur - 1);
+        const bj = await ask(`?view=mMatchup&view=mMatchupScore&view=mBoxscore&scoringPeriodId=${week}`);
+        if (debug === 'box') return json(bj, cors);
+        const pool = [];
+        for (const m of bj.schedule || []) {
+          if (m.matchupPeriodId !== week) continue;
+          for (const side of [m.home, m.away]) {
+            if (!side) continue;
+            const entries = (side.rosterForCurrentScoringPeriod || side.rosterForMatchupPeriod || {}).entries || [];
+            for (const e of entries) {
+              const pe = e.playerPoolEntry || {}, p = pe.player || {}, pos = POS[p.defaultPositionId];
+              if (!pos) continue;
+              pool.push({ pos, name: p.fullName, pts: Math.round((pe.appliedStatTotal || 0) * 10) / 10, nfl: NFL[p.proTeamId] || '',
+                team: name[side.teamId], gm: (byId[side.teamId] || {}).gm || '', started: ![20, 21].includes(e.lineupSlotId) });
+            }
+          }
+        }
+        const take = (pos, n) => pool.filter(x => x.pos === pos).sort((a, b) => b.pts - a.pts).slice(0, n);
+        const lineup = [...take('QB', 1), ...take('RB', 2), ...take('WR', 2), ...take('TE', 1), ...take('K', 1)];
+        return done(json({ week, lineup, scanned: pool.length }, cors));
       }
 
       // ESPN only returns transactions when asked one scoring period (week) at a time. Week 0 is the preseason.

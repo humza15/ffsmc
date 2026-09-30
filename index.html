@@ -79,6 +79,25 @@ nav button.on{color:var(--link)}
 #sheet{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:7;align-items:flex-end}
 #sheet.on{display:flex}
 #sheet .pane{width:100%;max-width:640px;margin:0 auto;background:var(--surface);border-top:2px solid var(--accent);padding:18px 16px calc(env(safe-area-inset-bottom,0px) + 18px);max-height:85%;overflow:auto}
+.weeks{display:flex;gap:6px;overflow-x:auto;margin-bottom:8px;padding-bottom:2px}
+.weeks button{flex:none;background:var(--surface);border:1px solid var(--line);border-radius:2px;color:var(--mute);padding:7px 12px;font:600 11px var(--sans);letter-spacing:.08em;text-transform:uppercase}
+.weeks button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.tw{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
+.tw:last-child{border:0}
+.tw .pos{flex:none;width:34px;text-align:center;font:700 10px/1 var(--sans);letter-spacing:.08em;padding:5px 0;background:var(--accent);color:var(--accent-ink);border-radius:1px}
+.tw .who{flex:1;min-width:0;font-size:14px;font-weight:600;line-height:1.3}
+.tw .who .muted{font-weight:400;font-size:11px}
+.tw .pts{font:300 22px/1 var(--sans);font-variant-numeric:tabular-nums}
+.bn{color:var(--link);font-weight:700}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{font:600 9px var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--mute);text-align:right;padding:4px 4px 8px;border-bottom:1px solid var(--line)}
+.tbl td{padding:9px 4px;border-bottom:1px solid var(--line);text-align:right;font-variant-numeric:tabular-nums}
+.tbl tr:last-child td{border:0}
+.tbl th:nth-child(2),.tbl td:nth-child(2){text-align:left}
+.tbl td:first-child{color:var(--mute);width:22px;text-align:left}
+.tbl tr.in td:first-child{box-shadow:inset 3px 0 0 var(--accent);padding-left:8px}
+.tbl small{display:block;color:var(--mute);font-size:11px}
+.tbl b{font-weight:600}
 #err{display:none;background:#B23A2E;color:#fff;font-size:13px;padding:8px 16px}
 #upd{display:none;position:fixed;left:12px;right:12px;top:calc(env(safe-area-inset-top,0px) + 8px);z-index:9;background:var(--accent);color:var(--accent-ink);border-radius:2px;padding:12px 14px;align-items:center;justify-content:space-between;gap:10px;box-shadow:0 8px 24px rgba(0,0,0,.35);font-size:13px}
 #upd.on{display:flex}
@@ -106,9 +125,18 @@ nav button.on{color:var(--link)}
     <a class="btn" id="homeEspn" target="_blank" rel="noopener">Open league in ESPN</a>
   </section>
 
-  <section id="rankings">
+  <section id="league">
     <h2>Power rankings 📈</h2>
-    <div id="rankView"></div>
+    <div class="weeks" id="rkChips"></div>
+    <div class="card rank" id="rankView"></div>
+    <h2>Team of the Week ⭐ <span class="badge" id="totwWk"></span></h2>
+    <div class="card" id="totw"><p class="muted" style="margin:0">Loading...</p></div>
+    <h2>Standings 📊</h2>
+    <div class="card" id="standings"><p class="muted" style="margin:0">Loading...</p></div>
+    <h2>Transactions 🔄 <span class="badge" id="txBadge">SAMPLE</span></h2>
+    <div class="card" id="txList"></div>
+    <p class="muted" id="txNote"></p>
+    <button class="btn alt" id="txRefresh">Refresh now</button>
   </section>
 
   <section id="history">
@@ -116,13 +144,6 @@ nav button.on{color:var(--link)}
     <div id="champs"></div>
     <div id="hist"></div>
     <a class="btn alt" id="franchise" target="_blank" rel="noopener">Franchise statistics</a>
-  </section>
-
-  <section id="moves">
-    <h2>Transactions 🔄 <span class="badge" id="txBadge">SAMPLE</span></h2>
-    <div class="card" id="txList"></div>
-    <p class="muted" id="txNote"></p>
-    <button class="btn alt" id="txRefresh">Refresh now</button>
   </section>
 
   <section id="espn">
@@ -148,15 +169,15 @@ nav button.on{color:var(--link)}
 
 <nav id="tabs">
   <button data-t="home" class="on"><svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8M5 10v10h5v-6h4v6h5V10"/></svg>Home</button>
-  <button data-t="rankings"><svg viewBox="0 0 24 24"><path d="M6 20V10M12 20V4M18 20v-7"/></svg>Rankings</button>
+  <button data-t="league"><svg viewBox="0 0 24 24"><path d="M6 20V10M12 20V4M18 20v-7"/></svg>League</button>
   <button data-t="history"><svg viewBox="0 0 24 24"><path d="M8 4h8v5a4 4 0 0 1-8 0V4zM8 6H4v1a3 3 0 0 0 4 3M16 6h4v1a3 3 0 0 1-4 3M12 13v4M8 20h8"/></svg>History</button>
-  <button data-t="moves"><svg viewBox="0 0 24 24"><path d="M4 8h14l-3-3M20 16H6l3 3"/></svg>Moves</button>
   <button data-t="espn"><svg viewBox="0 0 24 24"><path d="M4 6h8M16 6h4M4 12h3M11 12h9M4 18h10M18 18h2"/><circle cx="14" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="16" cy="18" r="2"/></svg>Settings</button>
 </nav>
 
 <script>
-const APP_VERSION = '0.4.1';
+const APP_VERSION = '0.5.0';
 const CHANGELOG = [
+  ['0.5.0', 'New League tab: power rankings with past weeks, Team of the Week, standings with playoff odds, transactions. Four tabs now.'],
   ['0.4.1', 'Built-in copies of the data files so the app never comes up empty if a file goes missing.'],
   ['0.4.0', 'Week updates itself every Tuesday, Game of the Week picks itself and opens a preview, header emojis.'],
   ['0.3.3', 'Home screen logo is now built into the app so it always shows.'],
@@ -171,6 +192,7 @@ let D = null, CH = [], TX = [], TEAMS = [], RK = [], txLive = false, txErr = '',
 
 /* ---------- tabs ---------- */
 function go(t){
+  if (!document.querySelector('section#' + t)) t = 'home';
   document.querySelectorAll('section').forEach(s => s.classList.toggle('on', s.id === t));
   document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.t === t));
   $('tabs').dataset.cur = t; document.querySelector('main').scrollTop = 0;
@@ -216,6 +238,7 @@ async function load(){
   loadRankings().then(r => { RK = r; renderRankings(); });
   Promise.all([loadTeams(), loadGotw()]).then(renderGotw);
   loadTx().then(renderTx);
+  loadLeague();
 }
 const espnUrl = () => 'https://fantasy.espn.com/football/league?leagueId=' + D.leagueId;
 
@@ -284,7 +307,7 @@ function updateWeek(){
 document.addEventListener('visibilitychange', () => {
   if (document.hidden || !D) return;
   const before = WEEK; updateWeek();
-  if (WEEK !== before) loadGotw().then(renderGotw);
+  if (WEEK !== before){ loadGotw().then(renderGotw); loadLeague(); }
 });
 // A hand-picked matchup in league.json (with a matching week) wins. Otherwise the Worker picks the best matchup.
 async function loadGotw(){
@@ -357,10 +380,79 @@ async function loadRankings(){
   if (!list.length) list = D.rankings.map(r => ({name:r.image.split('/').pop(), image:r.image, caption:r.caption}));
   return list.sort((a,b) => b.name.localeCompare(a.name, undefined, {numeric:true}));
 }
+let rkSel = 0;
+function showRank(i){
+  rkSel = i; const r = RK[i];
+  $('rankView').innerHTML = r ? `<p class="muted" style="margin-top:0">${esc(r.caption)} 📈${i === 0 ? ' (latest)' : ''}</p>${imgOrPlaceholder(r)}` : '<div class="ph">Upload images to the rankings folder</div>';
+  document.querySelectorAll('#rkChips button').forEach(b => b.classList.toggle('on', +b.dataset.i === i));
+}
 function renderRankings(){
-  $('rankView').innerHTML = RK.map(r => `<div class="card rank"><p class="muted" style="margin-top:0">${esc(r.caption)} 📈</p>${imgOrPlaceholder(r)}</div>`).join('')
-    || '<div class="card"><div class="ph">Upload images to the rankings folder</div></div>';
+  const wk = r => { const m = r.name.match(/week[\s_-]*0*(\d+)/i); return m ? 'Week ' + m[1] : r.caption; };
+  $('rkChips').innerHTML = RK.length > 1 ? RK.map((r, i) => `<button data-i="${i}">${esc(wk(r))}</button>`).join('') : '';
+  showRank(0);
   $('homeRank').innerHTML = RK[0] ? `<p class="muted" style="margin-top:0">${esc(RK[0].caption)} 📈</p>${imgOrPlaceholder(RK[0])}` : '<div class="ph">No rankings posted yet</div>';
+}
+$('rkChips').addEventListener('click', e => { const b = e.target.closest('button'); if (b) showRank(+b.dataset.i); });
+
+/* ---------- standings, playoff odds, team of the week ---------- */
+let STAND = null, TOTW = null;
+async function cachedJSON(key, url, ttl, force){
+  const read = () => { try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch(e){ return null; } };
+  let c = read();
+  if (!force && c && Date.now() - c.ts < ttl) return c.data;
+  try {
+    const j = await (await fetch(url)).json();
+    if (j && !j.error){ try { localStorage.setItem(key, JSON.stringify({ts:Date.now(), data:j})); } catch(e){} return j; }
+  } catch(e){}
+  return c ? c.data : null;
+}
+async function loadLeague(force){
+  if (!D.espnProxy){ renderStandings(); renderTotw(); return; }
+  const base = `${D.espnProxy}?season=${D.season}`, tw = WEEK - 1;
+  [STAND, TOTW] = await Promise.all([
+    cachedJSON(`st-${D.season}-${WEEK}`, `${base}&view=standings`, TX_TTL, force),
+    tw >= 1 ? cachedJSON(`totw-${D.season}-${tw}`, `${base}&view=totw&week=${tw}`, TX_TTL * 3, force) : null
+  ]);
+  renderStandings(); renderTotw();
+}
+// Our own estimate: simulate the rest of the regular season 4,000 times from each team's scoring average.
+function playoffOdds(S){
+  const T = S.teams, n = T.length, N = S.playoffTeams || 6, SIMS = 4000, SD = 24;
+  const idx = {}; T.forEach((t, i) => idx[t.id] = i);
+  const games = T.reduce((a, t) => a + t.games, 0), lgAvg = games ? T.reduce((a, t) => a + t.pf, 0) / games : 100;
+  const mu = T.map(t => (t.pf + 2 * lgAvg) / (t.games + 2));   // blended with the league average early in the season
+  const base = T.map(t => t.wins + 0.5 * t.ties), basePf = T.map(t => t.pf);
+  const R = (S.remaining || []).filter(g => idx[g.a] != null && idx[g.b] != null).map(g => [idx[g.a], idx[g.b]]);
+  const hits = new Array(n).fill(0), order = Array.from({length:n}, (_, i) => i);
+  const randn = () => Math.sqrt(-2 * Math.log(1 - Math.random())) * Math.cos(2 * Math.PI * Math.random());
+  for (let s = 0; s < SIMS; s++){
+    const w = base.slice(), p = basePf.slice();
+    for (const [a, b] of R){
+      const sa = mu[a] + SD * randn(), sb = mu[b] + SD * randn();
+      p[a] += sa; p[b] += sb;
+      if (sa > sb) w[a] += 1; else w[b] += 1;
+    }
+    order.sort((x, y) => w[y] - w[x] || p[y] - p[x]);
+    for (let k = 0; k < N && k < n; k++) hits[order[k]]++;
+  }
+  return hits.map(h => Math.round(h / SIMS * 100));
+}
+function renderStandings(){
+  const el = $('standings');
+  if (!STAND || !STAND.teams || !STAND.teams.length){ el.innerHTML = '<p class="muted" style="margin:0">Standings will show up once the ESPN Worker responds.</p>'; return; }
+  const odds = playoffOdds(STAND), N = STAND.playoffTeams || 6;
+  const rows = STAND.teams.map((t, i) => ({...t, pct: odds[i]})).sort((a, b) => (b.wins + .5 * b.ties) - (a.wins + .5 * a.ties) || b.pf - a.pf);
+  el.innerHTML = `<table class="tbl"><thead><tr><th>#</th><th>Team</th><th>W-L</th><th>PF</th><th>Playoffs</th></tr></thead><tbody>` +
+    rows.map((t, i) => `<tr class="${i < N ? 'in' : ''}"><td>${i + 1}</td><td><b>${esc(t.team)}</b><small>${esc(t.gm)}</small></td><td>${esc(t.record)}</td><td>${t.pf.toFixed(1)}</td><td>${t.pct}%</td></tr>`).join('') +
+    `</tbody></table><p class="muted" style="margin:10px 0 0">Top ${N} make the playoffs. Playoff odds are an estimate from 4,000 simulated seasons using each team's record, scoring and remaining schedule.</p>`;
+}
+function renderTotw(){
+  const tw = WEEK - 1, el = $('totw');
+  $('totwWk').style.display = tw >= 1 ? '' : 'none';
+  $('totwWk').textContent = 'Week ' + ((TOTW && TOTW.week) || tw);
+  if (tw < 1){ el.innerHTML = '<p class="muted" style="margin:0">Available once Week 1 is final.</p>'; return; }
+  if (!TOTW || !TOTW.lineup || !TOTW.lineup.length){ el.innerHTML = `<p class="muted" style="margin:0">No lineup data for Week ${tw} yet.</p>`; return; }
+  el.innerHTML = TOTW.lineup.map(p => `<div class="tw"><span class="pos">${esc(p.pos)}</span><div class="who">${esc(p.name)} <span class="muted">${esc(p.nfl)}</span><div class="muted">${esc(p.team)}${p.gm ? ' (' + esc(p.gm) + ')' : ''} &middot; <span class="${p.started ? '' : 'bn'}">${p.started ? 'Started' : 'Benched'}</span></div></div><span class="pts">${p.pts.toFixed(1)}</span></div>`).join('');
 }
 
 /* ---------- transactions ---------- */
@@ -411,7 +503,7 @@ function ago(ts){
 }
 const txRow = t => `<div class="tx"><span class="tag ${t.type}">${t.type}</span><div>${esc(t.text)}<div class="muted">${ago(t.ts)}</div></div></div>`;
 function renderTx(){
-  $('txList').innerHTML = TX.map(txRow).join('') || '<p class="muted" style="margin:0">No transactions yet this season.</p>';
+  $('txList').innerHTML = TX.slice(0, 15).map(txRow).join('') || '<p class="muted" style="margin:0">No transactions yet this season.</p>';
   $('homeTx').innerHTML = TX.slice(0,3).map(txRow).join('') || '<p class="muted" style="margin:0">No transactions yet.</p>';
   $('txBadge').style.display = txLive ? 'none' : '';
   const when = txAt ? new Date(txAt).toLocaleString([], {weekday:'short', hour:'numeric', minute:'2-digit'}) : '';
@@ -421,7 +513,7 @@ function renderTx(){
 }
 $('txRefresh').onclick = async () => {
   const b = $('txRefresh'); b.textContent = 'Checking...';
-  await loadTx(true); renderTx(); b.textContent = 'Refresh now';
+  await Promise.all([loadTx(true).then(renderTx), loadLeague(true)]); b.textContent = 'Refresh now';
 };
 document.addEventListener('visibilitychange', () => { if (!document.hidden && txLive && Date.now() - txAt > TX_TTL) loadTx().then(renderTx); });
 
