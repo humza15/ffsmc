@@ -248,12 +248,13 @@ export default {
       const byId = {};
       (lg.teams || []).forEach(t => byId[t.id] = info(t));
 
-      const allTx = async () => {
+      const rawTx = async () => {
         const weeks = await Promise.all(Array.from({ length: cur + 1 }, (_, w) =>
           ask(`?view=mTransactions2&scoringPeriodId=${w}`).then(j => j.transactions || []).catch(() => [])));
         const seen = new Set();
-        return weeks.flat().filter(t => t.status === 'EXECUTED' && (!t.id || (!seen.has(t.id) && seen.add(t.id))));
+        return weeks.flat().filter(t => !t.id || (!seen.has(t.id) && seen.add(t.id)));
       };
+      const allTx = async () => (await rawTx()).filter(t => t.status === 'EXECUTED');
       const resolvePlayers = async ids => {
         const out = {};
         (lg.teams || []).forEach(t => ((t.roster && t.roster.entries) || []).forEach(en => {
@@ -282,6 +283,12 @@ export default {
           return pts >= 1 ? 'ppr' : pts > 0 ? 'half' : 'std';
         } catch (e) { return 'ppr'; }
       };
+
+      if (debug === 'trades') {   // what ESPN reports for trades, including ones still in the review period
+        const all = await rawTx();
+        return json({ currentWeek: cur, totalTransactions: all.length,
+          trades: all.filter(t => /TRADE/.test(t.type)).map(t => ({ id: t.id, type: t.type, status: t.status, week: t.scoringPeriodId, date: t.proposedDate, items: (t.items || []).length })) }, cors);
+      }
 
       if (view === 'values') {
         const wk = +q.get('week') || cur;
@@ -345,7 +352,7 @@ export default {
 
       // ----- trades: who sent whom to whom, graded, with a note about each roster -----
       if (view === 'trades') {
-        const trades = (await allTx()).filter(t => t.type === 'TRADE_ACCEPTED').sort((a, b) => b.proposedDate - a.proposedDate).slice(0, 12);
+        const trades = (await rawTx()).filter(t => t.type === 'TRADE_ACCEPTED' && ['EXECUTED', 'PENDING'].includes(t.status)).sort((a, b) => b.proposedDate - a.proposedDate).slice(0, 12);
         const wk = +q.get('week') || cur;
         const vt = await getValues(env, wk, await scoringKind());
         const have = Object.keys(vt.players).length > 0;
@@ -401,7 +408,7 @@ export default {
             const w = list[0].s >= list[1].s ? list[0] : list[1];
             verdict = Math.abs(w.s) < .06 ? 'Close to a fair swap on the numbers.' : `${w.gm} wins on value, coming out about ${Math.round(w.R - w.S)} points ahead.`;
           }
-          return { id: String(t.id), ts: t.proposedDate, verdict, sides: list.map(({ s, R, S, ...rest }) => rest) };
+          return { id: String(t.id), ts: t.proposedDate, pending: t.status !== 'EXECUTED', verdict, sides: list.map(({ s, R, S, ...rest }) => rest) };
         });
         return done(json({ trades: out, source, sources: vt.sources }, cors));
       }

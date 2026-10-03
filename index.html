@@ -213,8 +213,9 @@ nav button.on{color:var(--link)}
 </nav>
 
 <script>
-const APP_VERSION = '0.6.0';
+const APP_VERSION = '0.6.1';
 const CHANGELOG = [
+  ['0.6.1', 'Trades still in the league review period now show up marked In review.'],
   ['0.6.0', 'Graded trades with emoji voting, weekly snapshots with movement arrows, choose-my-team highlights, shorter transactions.'],
   ['0.5.0', 'New League tab: power rankings with past weeks, Team of the Week, standings with playoff odds, transactions. Four tabs now.'],
   ['0.4.1', 'Built-in copies of the data files so the app never comes up empty if a file goes missing.'],
@@ -543,7 +544,7 @@ function tradeCard(t){
   const votes = VOTES.enabled
     ? `<div class="votes">${EMO.map((e, i) => `<button class="v${v.mine === i ? ' on' : ''}" data-t="${esc(t.id)}" data-i="${i}"><span class="e">${e[0]}</span><span class="n">${v.counts[i]}</span><span class="l">${e[1]}</span></button>`).join('')}</div><p class="vn">${total} vote${total === 1 ? '' : 's'}. ${v.mine === null ? 'Tap to rate this trade.' : 'Tap again to change or clear your vote.'}</p>`
     : '<p class="vn">Voting turns on once the Worker has storage set up.</p>';
-  return `<div class="card tr"><div class="top"><span>${when}</span><span class="tag TRADE">TRADE</span></div><div class="sides">${sides}</div>${t.verdict ? `<p class="why">${esc(t.verdict)}</p>` : ''}<p class="src">${esc(TRADES.source || '')} Totals are depth-adjusted.</p>${votes}</div>`;
+  return `<div class="card tr"><div class="top"><span>${when}</span><span class="tag TRADE">${t.pending ? 'IN REVIEW' : 'TRADE'}</span></div><div class="sides">${sides}</div>${t.verdict ? `<p class="why">${esc(t.verdict)}</p>` : ''}<p class="src">${esc(TRADES.source || '')} Totals are depth-adjusted.</p>${votes}</div>`;
 }
 function renderTrades(){
   const el = $('trades'), more = $('trMore');
