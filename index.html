@@ -98,6 +98,34 @@ nav button.on{color:var(--link)}
 .tbl tr.in td:first-child{box-shadow:inset 3px 0 0 var(--accent);padding-left:8px}
 .tbl small{display:block;color:var(--mute);font-size:11px}
 .tbl b{font-weight:600}
+.tr .top{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--mute);margin-bottom:12px}
+.tr .sides{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+.tr .side{border:1px solid var(--line);padding:10px}
+.tr .hd{display:flex;justify-content:space-between;align-items:flex-start;gap:6px;margin-bottom:10px}
+.tr .gm{font-size:15px;font-weight:600}
+.tr .tm{font-size:11px;color:var(--mute);line-height:1.3}
+.tr .gr{flex:none;width:38px;height:38px;border:1.5px solid;display:grid;place-items:center;font-size:18px;font-weight:600}
+.tr .gets{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);margin-bottom:6px}
+.tr .pl{display:flex;justify-content:space-between;gap:6px;padding:6px 0;border-top:1px solid var(--line);font-size:13px;line-height:1.3}
+.tr .pl small{display:block;font-size:11px;color:var(--mute)}
+.tr .pl span{color:var(--mute);font-variant-numeric:tabular-nums}
+.tr .tot{border-top:1px solid var(--line);padding-top:6px;font-size:11px;color:var(--mute);display:flex;justify-content:space-between}
+.tr .note{font-size:12px;line-height:1.45;margin:8px 0 0}
+.tr .why{font-size:13px;line-height:1.5;margin:12px 0 4px}
+.tr .src{font-size:11px;color:var(--mute);margin:0 0 14px}
+.tr .votes{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.tr .v{background:transparent;border:1px solid var(--line);border-radius:2px;color:var(--ink);padding:8px 0 6px;display:flex;flex-direction:column;align-items:center;gap:2px}
+.tr .v .e{font-size:20px;line-height:1.2}.tr .v .n{font-size:13px;font-variant-numeric:tabular-nums}.tr .v .l{font-size:10px;color:var(--mute)}
+.tr .v.on{border-color:var(--link);box-shadow:inset 0 0 0 1px var(--link)}
+.tr .vn{font-size:11px;color:var(--mute);margin:8px 0 0}
+.up{color:#3FAE76;font-size:10px;margin-left:4px}.dn{color:#E05A4F;font-size:10px;margin-left:4px}
+.mine{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--mute);padding:0 2px 12px}
+.mine b{color:var(--ink);font-weight:600}.mine a{color:var(--link);text-decoration:none}
+.pick{display:flex;justify-content:space-between;align-items:center;width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:2px;color:var(--ink);padding:12px;margin-bottom:6px;font:inherit}
+.pick small{color:var(--mute)}
+.tbl td:first-child{width:40px}
+.me{background:color-mix(in srgb,var(--accent) 14%,transparent)}
+.tw.me{padding-left:8px;padding-right:8px}.tr .side.me{border-color:var(--link)}.tx.me{padding-left:6px;padding-right:6px}
 #err{display:none;background:#B23A2E;color:#fff;font-size:13px;padding:8px 16px}
 #upd{display:none;position:fixed;left:12px;right:12px;top:calc(env(safe-area-inset-top,0px) + 8px);z-index:9;background:var(--accent);color:var(--accent-ink);border-radius:2px;padding:12px 14px;align-items:center;justify-content:space-between;gap:10px;box-shadow:0 8px 24px rgba(0,0,0,.35);font-size:13px}
 #upd.on{display:flex}
@@ -117,6 +145,7 @@ nav button.on{color:var(--link)}
 
 <main>
   <section id="home">
+    <div class="mine" id="mine"></div>
     <div class="gotw" id="gotw"></div>
     <h2>Latest power rankings 📈</h2>
     <div class="card rank" id="homeRank"></div>
@@ -133,8 +162,12 @@ nav button.on{color:var(--link)}
     <div class="card" id="totw"><p class="muted" style="margin:0">Loading...</p></div>
     <h2>Standings 📊</h2>
     <div class="card" id="standings"><p class="muted" style="margin:0">Loading...</p></div>
+    <h2>Trades 🤝</h2>
+    <div id="trades"><div class="card"><p class="muted" style="margin:0">Loading...</p></div></div>
+    <button class="btn alt" id="trMore" style="display:none;margin-bottom:10px"></button>
     <h2>Transactions 🔄 <span class="badge" id="txBadge">SAMPLE</span></h2>
     <div class="card" id="txList"></div>
+    <button class="btn alt" id="txMore" style="margin-bottom:10px"></button>
     <p class="muted" id="txNote"></p>
     <button class="btn alt" id="txRefresh">Refresh now</button>
   </section>
@@ -156,6 +189,11 @@ nav button.on{color:var(--link)}
       <a class="btn" id="espnOpen" target="_blank" rel="noopener">Open league</a>
       <button class="btn alt" id="copyId" style="margin-top:8px">Copy league ID</button>
     </div>
+    <h2>My team</h2>
+    <div class="card">
+      <p id="myLine" style="margin:0 0 12px">Not chosen yet</p>
+      <button class="btn alt" id="myPick">Choose my team</button>
+    </div>
     <h2>About</h2>
     <div class="card">
       <h3>Version <span id="ver"></span></h3>
@@ -175,8 +213,9 @@ nav button.on{color:var(--link)}
 </nav>
 
 <script>
-const APP_VERSION = '0.5.0';
+const APP_VERSION = '0.6.0';
 const CHANGELOG = [
+  ['0.6.0', 'Graded trades with emoji voting, weekly snapshots with movement arrows, choose-my-team highlights, shorter transactions.'],
   ['0.5.0', 'New League tab: power rankings with past weeks, Team of the Week, standings with playoff odds, transactions. Four tabs now.'],
   ['0.4.1', 'Built-in copies of the data files so the app never comes up empty if a file goes missing.'],
   ['0.4.0', 'Week updates itself every Tuesday, Game of the Week picks itself and opens a preview, header emojis.'],
@@ -188,7 +227,10 @@ const CHANGELOG = [
   ['0.1.0', 'First release: rankings, champions corner, history, sample transactions, ESPN launcher, update prompts.']
 ];
 const $ = id => document.getElementById(id);
-let D = null, CH = [], TX = [], TEAMS = [], RK = [], txLive = false, txErr = '', txAt = 0, champYear = null, PREV = {}, GOTW = null, WEEK = 0;
+let D = null, CH = [], TX = [], TEAMS = [], RK = [], txLive = false, txErr = '', txAt = 0, champYear = null, PREV = {}, GOTW = null, WEEK = 0, MY = null, TRADES = null, VOTES = {}, trAll = false, txAll = false, LASTROWS = [], SNAP_PREV = null;
+try { MY = JSON.parse(localStorage.getItem('my') || 'null'); if (MY) MY.id = +MY.id; } catch(e){}
+const VOTER = (() => { try { let v = localStorage.getItem('voter'); if (!v){ v = 'v' + Math.random().toString(36).slice(2, 12) + Date.now().toString(36); localStorage.setItem('voter', v); } return v; } catch(e){ return 'anon'; } })();
+const isMine = m => !!MY && m && ((m.id != null && m.id === MY.id) || (m.id == null && m.gm && MY.gm && m.gm.toLowerCase().includes(MY.gm.toLowerCase())));
 
 /* ---------- tabs ---------- */
 function go(t){
@@ -236,9 +278,10 @@ async function load(){
   render();
   $('dataNote').textContent = dataNote;
   loadRankings().then(r => { RK = r; renderRankings(); });
-  Promise.all([loadTeams(), loadGotw()]).then(renderGotw);
+  Promise.all([loadTeams(), loadGotw()]).then(() => { renderGotw(); renderMy(); renderMine(); if (!MY && TEAMS.length && !localStorage.getItem('mySkip')) openPicker(); });
   loadTx().then(renderTx);
   loadLeague();
+  loadTrades();
 }
 const espnUrl = () => 'https://fantasy.espn.com/football/league?leagueId=' + D.leagueId;
 
@@ -307,7 +350,7 @@ function updateWeek(){
 document.addEventListener('visibilitychange', () => {
   if (document.hidden || !D) return;
   const before = WEEK; updateWeek();
-  if (WEEK !== before){ loadGotw().then(renderGotw); loadLeague(); }
+  if (WEEK !== before){ loadGotw().then(renderGotw); loadLeague(); loadTrades(); }
 });
 // A hand-picked matchup in league.json (with a matching week) wins. Otherwise the Worker picks the best matchup.
 async function loadGotw(){
@@ -331,8 +374,9 @@ const gotwSide = m => `<div><div class="gm">${esc(m.gm || m.team)}</div><div cla
 function renderGotw(){
   if (!GOTW){ $('gotw').style.display = 'none'; return; }
   GOTW.ea = enrich(GOTW.a); GOTW.eb = enrich(GOTW.b);
+  const mine = isMine(GOTW.ea) || isMine(GOTW.eb); $('gotw').classList.toggle('me', mine);
   $('gotw').style.display = '';
-  $('gotw').innerHTML = `<div class="hd"><b>Game of the Week 🔥</b><span>Week ${WEEK}</span></div><div class="vs">${gotwSide(GOTW.ea)}<span class="x">vs</span>${gotwSide(GOTW.eb)}</div><div class="muted tap">Tap for the preview</div>`;
+  $('gotw').innerHTML = `<div class="hd"><b>Game of the Week 🔥</b><span>Week ${WEEK}</span></div><div class="vs">${gotwSide(GOTW.ea)}<span class="x">vs</span>${gotwSide(GOTW.eb)}</div><div class="muted tap">${mine ? 'Your game &middot; ' : ''}Tap for the preview</div>`;
 }
 // A written preview in data/previews.json wins. Otherwise a short one is built from records and scoring.
 function autoPreview(a, b){
@@ -360,7 +404,7 @@ $('gotw').addEventListener('click', openSheet);
 $('sheet').addEventListener('click', e => { if (e.target.id === 'sheet' || e.target.id === 'sheetClose') $('sheet').classList.remove('on'); });
 async function loadTeams(){
   if (!D.espnProxy) return [];
-  try { const j = await (await fetch(`${D.espnProxy}?view=teams&season=${D.season}`)).json(); if (Array.isArray(j)) TEAMS = j; } catch(e){}
+  try { const j = await (await fetch(`${D.espnProxy}?view=teams&season=${D.season}`)).json(); if (Array.isArray(j)) TEAMS = j.map(t => ({...t, id: +t.id})); } catch(e){}
   return TEAMS;
 }
 const pretty = n => n.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
@@ -413,18 +457,40 @@ async function loadLeague(force){
     cachedJSON(`st-${D.season}-${WEEK}`, `${base}&view=standings`, TX_TTL, force),
     tw >= 1 ? cachedJSON(`totw-${D.season}-${tw}`, `${base}&view=totw&week=${tw}`, TX_TTL * 3, force) : null
   ]);
-  renderStandings(); renderTotw();
+  renderStandings(); renderTotw(); renderMine();
+  snapshotFlow();
+}
+// ----- weekly snapshots: saved once per week (server if available, this phone otherwise) -----
+const snapKey = w => `snap-${D.season}-${w}`;
+async function snapGet(week){
+  if (D.espnProxy){ try { const j = await (await fetch(`${D.espnProxy}?view=snapshot&season=${D.season}&week=${week}`)).json(); if (j && j.enabled) return j.snap; } catch(e){} }
+  try { return JSON.parse(localStorage.getItem(snapKey(week)) || 'null'); } catch(e){ return null; }
+}
+async function snapSave(week, teams){
+  try { if (!localStorage.getItem(snapKey(week))) localStorage.setItem(snapKey(week), JSON.stringify({teams})); } catch(e){}
+  if (D.espnProxy){ try { await fetch(`${D.espnProxy}?view=snapshot&season=${D.season}&week=${week}`, {method:'POST', headers:{'Content-Type':'text/plain'}, body:JSON.stringify({teams})}); } catch(e){} }
+}
+async function snapshotFlow(){
+  if (!WEEK || !LASTROWS.length) return;
+  const cur = LASTROWS.map((t, i) => ({id: t.id, rank: i + 1, pct: t.pct}));
+  if (!(await snapGet(WEEK))) await snapSave(WEEK, cur);
+  const prev = WEEK > 1 ? await snapGet(WEEK - 1) : null;
+  if (prev && prev.teams && prev.teams.length){ SNAP_PREV = {}; prev.teams.forEach(t => SNAP_PREV[t.id] = t); renderStandings(); }
 }
 // Our own estimate: simulate the rest of the regular season 4,000 times from each team's scoring average.
+// The random numbers are seeded by season and week, so every phone gets the same odds.
+const hashStr = s => { let h = 2166136261; for (const c of s) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return h >>> 0; };
+function mulberry32(a){ return () => { a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 function playoffOdds(S){
   const T = S.teams, n = T.length, N = S.playoffTeams || 6, SIMS = 4000, SD = 24;
   const idx = {}; T.forEach((t, i) => idx[t.id] = i);
   const games = T.reduce((a, t) => a + t.games, 0), lgAvg = games ? T.reduce((a, t) => a + t.pf, 0) / games : 100;
-  const mu = T.map(t => (t.pf + 2 * lgAvg) / (t.games + 2));   // blended with the league average early in the season
+  const mu = T.map(t => (t.pf + 2 * lgAvg) / (t.games + 2));
   const base = T.map(t => t.wins + 0.5 * t.ties), basePf = T.map(t => t.pf);
   const R = (S.remaining || []).filter(g => idx[g.a] != null && idx[g.b] != null).map(g => [idx[g.a], idx[g.b]]);
   const hits = new Array(n).fill(0), order = Array.from({length:n}, (_, i) => i);
-  const randn = () => Math.sqrt(-2 * Math.log(1 - Math.random())) * Math.cos(2 * Math.PI * Math.random());
+  const rnd = mulberry32(hashStr(D.season + '-' + WEEK));
+  const randn = () => Math.sqrt(-2 * Math.log(1 - rnd())) * Math.cos(2 * Math.PI * rnd());
   for (let s = 0; s < SIMS; s++){
     const w = base.slice(), p = basePf.slice();
     for (const [a, b] of R){
@@ -437,22 +503,110 @@ function playoffOdds(S){
   }
   return hits.map(h => Math.round(h / SIMS * 100));
 }
+const arrow = d => d > 0 ? `<span class="up">▲${d}</span>` : d < 0 ? `<span class="dn">▼${-d}</span>` : '';
 function renderStandings(){
   const el = $('standings');
   if (!STAND || !STAND.teams || !STAND.teams.length){ el.innerHTML = '<p class="muted" style="margin:0">Standings will show up once the ESPN Worker responds.</p>'; return; }
   const odds = playoffOdds(STAND), N = STAND.playoffTeams || 6;
   const rows = STAND.teams.map((t, i) => ({...t, pct: odds[i]})).sort((a, b) => (b.wins + .5 * b.ties) - (a.wins + .5 * a.ties) || b.pf - a.pf);
+  LASTROWS = rows;
   el.innerHTML = `<table class="tbl"><thead><tr><th>#</th><th>Team</th><th>W-L</th><th>PF</th><th>Playoffs</th></tr></thead><tbody>` +
-    rows.map((t, i) => `<tr class="${i < N ? 'in' : ''}"><td>${i + 1}</td><td><b>${esc(t.team)}</b><small>${esc(t.gm)}</small></td><td>${esc(t.record)}</td><td>${t.pf.toFixed(1)}</td><td>${t.pct}%</td></tr>`).join('') +
-    `</tbody></table><p class="muted" style="margin:10px 0 0">Top ${N} make the playoffs. Playoff odds are an estimate from 4,000 simulated seasons using each team's record, scoring and remaining schedule.</p>`;
+    rows.map((t, i) => {
+      const pr = SNAP_PREV && SNAP_PREV[t.id];
+      const rk = pr ? arrow(pr.rank - (i + 1)) : '', od = pr && Math.abs(t.pct - pr.pct) >= 3 ? arrow(t.pct - pr.pct > 0 ? 1 : -1).replace(/[0-9]+/, '') : '';
+      return `<tr class="${i < N ? 'in' : ''}${isMine(t) ? ' me' : ''}"><td>${i + 1}${rk}</td><td><b>${esc(t.team)}</b><small>${esc(t.gm)}</small></td><td>${esc(t.record)}</td><td>${t.pf.toFixed(1)}</td><td>${t.pct}%${od}</td></tr>`;
+    }).join('') +
+    `</tbody></table><p class="muted" style="margin:10px 0 0">Top ${N} make the playoffs. Arrows compare to last week. Playoff odds are an estimate from 4,000 simulated seasons using each team's record, scoring and remaining schedule.</p>`;
 }
+// ----- trades with grades and emoji voting -----
+const GRC = g => ({A:'#4FB583', B:'#9CC46A', C:'#D9A441'}[g && g[0]] || '#E05A4F');
+const EMO = [['🔥','Fire'], ['🤝','Fair'], ['😬','Yikes'], ['🤡','Clown'], ['💀','Robbery']];
+async function loadTrades(force){
+  if (!D.espnProxy){ renderTrades(); return; }
+  const base = `${D.espnProxy}?season=${D.season}`, wk = Math.max(1, WEEK);
+  await cachedJSON(`trv-${D.season}-${wk}`, `${base}&view=values&week=${wk}`, TX_TTL, force);   // builds the player values in its own request first
+  TRADES = await cachedJSON(`tr-${D.season}-${wk}`, `${base}&view=trades&week=${wk}`, TX_TTL, force);
+  renderTrades(); loadVotes();
+}
+async function loadVotes(){
+  if (!D.espnProxy || !TRADES || !(TRADES.trades || []).length) return;
+  try {
+    const j = await (await fetch(`${D.espnProxy}?view=votes&season=${D.season}&voter=${VOTER}&ids=${encodeURIComponent(TRADES.trades.map(t => t.id).join(','))}`)).json();
+    VOTES = j && j.enabled ? {enabled:true, ...j.votes} : {enabled:false};
+  } catch(e){ VOTES = {enabled:false}; }
+  renderTrades();
+}
+function tradeCard(t){
+  const v = VOTES[t.id] || {counts:[0,0,0,0,0], mine:null}, total = v.counts.reduce((a, c) => a + c, 0);
+  const when = new Date(t.ts).toLocaleDateString([], {weekday:'short', month:'short', day:'numeric'});
+  const sides = t.sides.map(s => `<div class="side${isMine(s) ? ' me' : ''}"><div class="hd"><div><div class="gm">${esc(s.gm || s.team)}</div><div class="tm">${esc(s.team)}</div></div><div class="gr" style="color:${GRC(s.grade)};border-color:${GRC(s.grade)}">${esc(s.grade || '-')}</div></div><div class="gets">Gets</div>${s.gets.map(p => `<div class="pl"><div>${esc(p.name)}<small>${esc([p.pos, p.nfl, p.rk].filter(Boolean).join(' · '))}</small></div><span>${p.v == null ? '-' : p.v.toFixed(1)}</span></div>`).join('')}<div class="tot"><span>Total value</span><span>${s.total == null ? '-' : s.total.toFixed(1)}</span></div>${s.note ? `<p class="note">${esc(s.note)}</p>` : ''}</div>`).join('');
+  const votes = VOTES.enabled
+    ? `<div class="votes">${EMO.map((e, i) => `<button class="v${v.mine === i ? ' on' : ''}" data-t="${esc(t.id)}" data-i="${i}"><span class="e">${e[0]}</span><span class="n">${v.counts[i]}</span><span class="l">${e[1]}</span></button>`).join('')}</div><p class="vn">${total} vote${total === 1 ? '' : 's'}. ${v.mine === null ? 'Tap to rate this trade.' : 'Tap again to change or clear your vote.'}</p>`
+    : '<p class="vn">Voting turns on once the Worker has storage set up.</p>';
+  return `<div class="card tr"><div class="top"><span>${when}</span><span class="tag TRADE">TRADE</span></div><div class="sides">${sides}</div>${t.verdict ? `<p class="why">${esc(t.verdict)}</p>` : ''}<p class="src">${esc(TRADES.source || '')} Totals are depth-adjusted.</p>${votes}</div>`;
+}
+function renderTrades(){
+  const el = $('trades'), more = $('trMore');
+  if (!TRADES){ el.innerHTML = `<div class="card"><p class="muted" style="margin:0">${D.espnProxy ? 'Trades will show up once the ESPN Worker responds.' : 'Connect the ESPN Worker to see trades.'}</p></div>`; more.style.display = 'none'; return; }
+  const list = TRADES.trades || [];
+  if (!list.length){ el.innerHTML = '<div class="card"><p class="muted" style="margin:0">No trades yet this season.</p></div>'; more.style.display = 'none'; return; }
+  el.innerHTML = list.slice(0, trAll ? list.length : 1).map(tradeCard).join('');
+  more.style.display = list.length > 1 ? '' : 'none';
+  more.textContent = trAll ? 'Show only the latest trade' : `See ${list.length - 1} earlier trade${list.length > 2 ? 's' : ''}`;
+}
+$('trMore').onclick = () => { trAll = !trAll; renderTrades(); };
+$('trades').addEventListener('click', async e => {
+  const b = e.target.closest('.v'); if (!b || !VOTES.enabled) return;
+  const id = b.dataset.t, i = +b.dataset.i, cur = VOTES[id] || {counts:[0,0,0,0,0], mine:null};
+  const next = {counts: cur.counts.slice(), mine: cur.mine};
+  if (next.mine !== null) next.counts[next.mine]--;
+  if (next.mine === i) next.mine = null; else { next.mine = i; next.counts[i]++; }
+  VOTES[id] = next; renderTrades();
+  try {
+    const j = await (await fetch(`${D.espnProxy}?view=vote&season=${D.season}`, {method:'POST', headers:{'Content-Type':'text/plain'}, body:JSON.stringify({trade:id, voter:VOTER, choice:next.mine})})).json();
+    if (j && j.counts){ VOTES[id] = {counts:j.counts, mine:j.mine}; renderTrades(); }
+  } catch(e){}
+});
+// ----- my team -----
+function setMy(t){
+  MY = t ? {id:+t.id, team:t.name || t.team, gm:t.owner || t.gm} : null;
+  try { if (MY) localStorage.setItem('my', JSON.stringify(MY)); else localStorage.removeItem('my'); } catch(e){}
+  renderMy(); renderMine(); renderStandings(); renderTotw(); renderTx(); renderTrades(); renderGotw();
+}
+function renderMy(){
+  $('myLine').textContent = MY ? MY.team + (MY.gm ? ' (' + MY.gm + ')' : '') : 'Not chosen yet';
+  $('myPick').textContent = MY ? 'Change my team' : 'Choose my team';
+}
+function renderMine(){
+  const el = $('mine');
+  if (!MY){ el.innerHTML = TEAMS.length ? '<span>Pick your team to see your matchup here.</span><a href="#" id="mineChoose">Choose</a>' : ''; return; }
+  const row = LASTROWS.find(t => t.id === MY.id) || (STAND && STAND.teams.find(t => t.id === MY.id));
+  const g = STAND && (STAND.remaining || []).find(x => x.w === WEEK && (x.a === MY.id || x.b === MY.id));
+  const opp = g && STAND.teams.find(t => t.id === (g.a === MY.id ? g.b : g.a));
+  el.innerHTML = `<span><b>${esc(MY.team)}</b>${row ? ' ' + esc(row.record) : ''}${row && row.pct != null ? ' &middot; ' + row.pct + '% playoffs' : ''}</span>${opp ? `<span>Wk ${WEEK} vs ${esc(opp.gm || opp.team)}</span>` : ''}`;
+}
+function openPicker(){
+  if (!TEAMS.length) return;
+  $('sheetBody').innerHTML = `<h3 style="margin:0 0 4px">Which team is yours?</h3><p class="muted" style="margin:0 0 12px">Your team gets highlighted across the app. You can change this in Settings.</p>` +
+    TEAMS.map(t => `<button class="pick" data-id="${t.id}"><span>${esc(t.name)}<br><small>${esc(t.owner)}</small></span><small>${esc(t.record || '')}</small></button>`).join('') +
+    `<button class="btn alt" id="pickSkip" style="margin-top:6px">Skip for now</button>`;
+  $('sheet').classList.add('on');
+}
+$('sheet').addEventListener('click', e => {
+  const p = e.target.closest('.pick');
+  if (p){ setMy(TEAMS.find(t => String(t.id) === p.dataset.id)); $('sheet').classList.remove('on'); try { localStorage.removeItem('mySkip'); } catch(x){} }
+  if (e.target.id === 'pickSkip'){ try { localStorage.setItem('mySkip', '1'); } catch(x){} $('sheet').classList.remove('on'); }
+});
+$('myPick').onclick = () => { if (TEAMS.length) openPicker(); else $('myLine').textContent = 'Teams load from the ESPN Worker. Try again in a moment.'; };
+document.addEventListener('click', e => { if (e.target.id === 'mineChoose'){ e.preventDefault(); openPicker(); } });
+
 function renderTotw(){
   const tw = WEEK - 1, el = $('totw');
   $('totwWk').style.display = tw >= 1 ? '' : 'none';
   $('totwWk').textContent = 'Week ' + ((TOTW && TOTW.week) || tw);
   if (tw < 1){ el.innerHTML = '<p class="muted" style="margin:0">Available once Week 1 is final.</p>'; return; }
   if (!TOTW || !TOTW.lineup || !TOTW.lineup.length){ el.innerHTML = `<p class="muted" style="margin:0">No lineup data for Week ${tw} yet.</p>`; return; }
-  el.innerHTML = TOTW.lineup.map(p => `<div class="tw"><span class="pos">${esc(p.pos)}</span><div class="who">${esc(p.name)} <span class="muted">${esc(p.nfl)}</span><div class="muted">${esc(p.team)}${p.gm ? ' (' + esc(p.gm) + ')' : ''} &middot; <span class="${p.started ? '' : 'bn'}">${p.started ? 'Started' : 'Benched'}</span></div></div><span class="pts">${p.pts.toFixed(1)}</span></div>`).join('');
+  el.innerHTML = TOTW.lineup.map(p => `<div class="tw${MY && p.teamId === MY.id ? ' me' : ''}"><span class="pos">${esc(p.pos)}</span><div class="who">${esc(p.name)} <span class="muted">${esc(p.nfl)}</span><div class="muted">${esc(p.team)}${p.gm ? ' (' + esc(p.gm) + ')' : ''} &middot; <span class="${p.started ? '' : 'bn'}">${p.started ? 'Started' : 'Benched'}</span></div></div><span class="pts">${p.pts.toFixed(1)}</span></div>`).join('');
 }
 
 /* ---------- transactions ---------- */
@@ -501,9 +655,11 @@ function ago(ts){
   const h = Math.max(1, Math.round((Date.now() - ts) / 3600e3));
   return h < 24 ? h + 'h ago' : Math.round(h / 24) + 'd ago';
 }
-const txRow = t => `<div class="tx"><span class="tag ${t.type}">${t.type}</span><div>${esc(t.text)}<div class="muted">${ago(t.ts)}</div></div></div>`;
+const txRow = t => `<div class="tx${MY && t.text.indexOf(MY.team) >= 0 ? ' me' : ''}"><span class="tag ${t.type}">${t.type}</span><div>${esc(t.text)}<div class="muted">${ago(t.ts)}</div></div></div>`;
 function renderTx(){
-  $('txList').innerHTML = TX.slice(0, 15).map(txRow).join('') || '<p class="muted" style="margin:0">No transactions yet this season.</p>';
+  const txl = TX.filter(t => t.type !== 'TRADE');
+  $('txMore').style.display = txl.length > 5 ? '' : 'none'; $('txMore').textContent = txAll ? 'Show fewer' : 'Show all ' + txl.length;
+  $('txList').innerHTML = txl.slice(0, txAll ? 40 : 5).map(txRow).join('') || '<p class="muted" style="margin:0">No transactions yet this season.</p>';
   $('homeTx').innerHTML = TX.slice(0,3).map(txRow).join('') || '<p class="muted" style="margin:0">No transactions yet.</p>';
   $('txBadge').style.display = txLive ? 'none' : '';
   const when = txAt ? new Date(txAt).toLocaleString([], {weekday:'short', hour:'numeric', minute:'2-digit'}) : '';
@@ -511,9 +667,10 @@ function renderTx(){
     ? 'Live from ESPN. Last checked ' + when + '. Rechecks about every 4 hours.' + (txErr ? ' Latest refresh failed: ' + txErr + '.' : '')
     : 'Sample data.' + (txErr ? ' Live feed problem: ' + txErr + '.' : '');
 }
+$('txMore').onclick = () => { txAll = !txAll; renderTx(); };
 $('txRefresh').onclick = async () => {
   const b = $('txRefresh'); b.textContent = 'Checking...';
-  await Promise.all([loadTx(true).then(renderTx), loadLeague(true)]); b.textContent = 'Refresh now';
+  await Promise.all([loadTx(true).then(renderTx), loadLeague(true), loadTrades(true)]); b.textContent = 'Refresh now';
 };
 document.addEventListener('visibilitychange', () => { if (!document.hidden && txLive && Date.now() - txAt > TX_TTL) loadTx().then(renderTx); });
 

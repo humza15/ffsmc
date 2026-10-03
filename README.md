@@ -72,3 +72,21 @@ When a file is found in the data folder it always wins, so your edits still take
 Power rankings (tap a week chip for earlier ones), Team of the Week (last completed week), standings with playoff odds, and transactions.
 Team of the Week covers every rostered player, started or benched. Free agents are not in the league data, so they can't appear.
 Playoff odds are the app's own simulation, because ESPN does not publish its odds.
+
+## 0.6.0 setup (Cloudflare)
+1. Storage for votes and weekly snapshots: Workers & Pages > KV > Create a namespace (any name). Then open your Worker >
+   Settings > Bindings > Add > KV namespace, variable name `KV`, pick the namespace.
+2. Trade chart: the poster is KyonFantasyFootball (built in). His chart is an image, so Claude reads it once a week and the result is saved in KV.
+   Create an API key at console.anthropic.com (add a few dollars of credit), then Worker > Settings > Variables > Add a secret named `ANTHROPIC_API_KEY`.
+   Optional: `REDDIT_USER` to use a different poster, `REDDIT_POST` for a fallback post id, `CLAUDE_MODEL` to change the model.
+3. Redeploy `worker/worker.js`.
+Checks: `YOUR-WORKER-URL/?debug=fp` (FantasyPros), `?debug=reddit&week=4` (Reddit chart), `?view=values&week=4` (what got blended).
+
+## How trade grades work
+Each player gets a 0-100 value: FantasyPros rest-of-season rank turned into a value, plus the Reddit chart scaled to 0-100, averaged 50/50
+(if one source is down the other is used alone, and the card says so). The Worker picks the newest chart at or before the current week.
+A side's grade compares what it receives with what it sends, with a small depth discount for extra players. The short note uses each roster.
+
+## Snapshots and arrows
+The first phone to open the app each week saves that week's standings and playoff odds. Arrows compare with the previous week's snapshot
+(rank moves, and odds moves of 3 points or more). Playoff odds use a seeded simulation so every phone gets the same numbers.
