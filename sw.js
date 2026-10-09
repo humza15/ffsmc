@@ -1,7 +1,7 @@
 // Bump VERSION with each release (keep it equal to APP_VERSION in index.html).
-const VERSION = '0.6.1';
+const VERSION = '0.7.0';
 const CACHE = 'suckmacock-' + VERSION;
-const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'data/league.json', 'data/champions.json', 'data/previews.json',
+const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'data/league.json', 'data/champions.json', 'data/previews.json', 'data/commish-thoughts.json',
   'icons/icon-192.png', 'icons/apple-touch-icon.png'];
 
 self.addEventListener('install', e => {

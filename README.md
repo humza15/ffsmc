@@ -90,3 +90,10 @@ A side's grade compares what it receives with what it sends, with a small depth 
 ## Snapshots and arrows
 The first phone to open the app each week saves that week's standings and playoff odds. Arrows compare with the previous week's snapshot
 (rank moves, and odds moves of 3 points or more). Playoff odds use a seeded simulation so every phone gets the same numbers.
+
+## 0.7.0 setup
+- AI summaries: create a key at aistudio.google.com/apikey, then Worker > Settings > Variables > Add secret `GEMINI_API_KEY`. Optional `GEMINI_MODEL` (default `gemini-2.5-flash`).
+  Check it at `YOUR-WORKER-URL/?debug=gemini`. Trade summaries are written once per trade and saved in KV. Game of the Week previews are written once per week.
+- Weeks now roll over every Tuesday at 8 AM Eastern. Game of the Week and its AI preview reset with them.
+- Trades show only after they go through. Trades still in the league review period stay hidden.
+- Commissioner notes: see COMMISH.md.
