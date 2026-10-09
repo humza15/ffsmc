@@ -244,8 +244,9 @@ nav button.on{color:var(--ink);border-top-color:var(--accent)}
 </nav>
 
 <script>
-const APP_VERSION = '0.7.0';
+const APP_VERSION = '0.7.1';
 const CHANGELOG = [
+  ['0.7.1', 'Trades now match each accepted trade to the right offer, so declined offers no longer show up.'],
   ['0.7.0', 'New editorial design, Gemini AI trade and Game of the Week summaries, grades that weigh each roster, completed trades only, Commish notes, 8 AM Eastern week reset.'],
   ['0.6.2', 'Trades no longer show a phantom third team when a player is dropped to make room.'],
   ['0.6.1', 'Trades still in the league review period now show up marked In review.'],
@@ -590,7 +591,7 @@ const GRC = g => ({A:'#4FB583', B:'#9CC46A', C:'#D9A441'}[g && g[0]] || '#E05A4F
 const EMO = [['🔥','Fire'], ['🤝','Fair'], ['😬','Yikes'], ['🤡','Clown'], ['💀','Robbery']];
 async function loadTrades(force){
   if (!D.espnProxy){ renderTrades(); return; }
-  const base = `${D.espnProxy}?season=${D.season}`, wk = Math.max(1, WEEK), key = `tr-${D.season}-${wk}`;
+  const base = `${D.espnProxy}?season=${D.season}`, wk = Math.max(1, WEEK), key = `tr2-${D.season}-${wk}`;
   await cachedJSON(`trv-${D.season}-${wk}`, `${base}&view=values&week=${wk}`, TX_TTL, force);   // builds the player values in its own request first
   TRADES = await cachedJSON(key, `${base}&view=trades&week=${wk}`, TX_TTL, force);
   const m = FM[key] || {};
@@ -599,7 +600,7 @@ async function loadTrades(force){
 }
 async function loadTradeAI(){
   for (const t of ((TRADES && TRADES.trades) || []).slice(0, 4)){
-    const j = await cachedJSON(`tai-${t.id}`, `${D.espnProxy}?view=tradeai&season=${D.season}&id=${encodeURIComponent(t.id)}`, 30 * 864e5);
+    const j = await cachedJSON(`tai2-${t.id}-${t.sig}`, `${D.espnProxy}?view=tradeai&season=${D.season}&id=${encodeURIComponent(t.id)}&sig=${encodeURIComponent(t.sig || '')}`, 30 * 864e5);
     if (j && j.sides){ TAI[t.id] = j; renderTrades(); }
   }
 }
@@ -704,7 +705,7 @@ async function loadTx(force){
   if (!force && cached && Date.now() - cached.ts < TX_TTL){ TX = cached.data; txLive = true; txAt = cached.ts; return; }
   if (D.espnProxy){
     try {
-      const r = await fetch(`${D.espnProxy}?view=transactions&leagueId=${D.leagueId}&season=${D.season}`);
+      const r = await fetch(`${D.espnProxy}?view=transactions&leagueId=${D.leagueId}&season=${D.season}&week=${WEEK}`);
       const j = await r.json().catch(() => null);
       if (Array.isArray(j)){
         TX = j; txLive = true; txAt = Date.now();
