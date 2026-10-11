@@ -1,99 +1,46 @@
-# Suckmacock Hub
+# The League (Suckmacock Hub)
 
-iOS web app (PWA) for ESPN league 1944871.
-
-## Deploy on GitHub Pages
-1. Create a repo and upload everything in this folder (keep the folder structure).
-2. Repo Settings > Pages > Deploy from branch > `main` / root.
-3. Open the Pages URL in Safari, tap Share > Add to Home Screen.
-
-## Update content (no code)
-- Weekly rankings: upload the image to `rankings/`, add an entry to `data/league.json`.
-- Champions and history: edit `data/league.json`.
-- Content changes show up the next time the app opens with a connection.
-
-## Push an app update with a prompt
-1. Change `VERSION` in `sw.js` and `APP_VERSION` + `CHANGELOG` in `index.html`.
-2. Commit. Users see the "A new version is ready" banner and tap Update.
-
-## Live ESPN transactions
-Transactions show sample data until `espnProxy` in `data/league.json` points to a proxy.
-ESPN blocks direct browser requests (CORS), and private leagues need your `espn_s2` and `SWID` cookies,
-so a small Cloudflare Worker holds them and returns JSON: `[{ "type": "ADD", "text": "...", "ts": 1760000000000 }]`.
-Never put those cookies in this repo.
-
-## Power rankings folder
-Upload images to `rankings/` named like `2026-week-04.jpg`. The app lists the folder through GitHub's API
-(auto-detected on `username.github.io/repo`; on a custom domain set `githubRepo` to `username/repo` in `data/league.json`).
-Home shows the newest name, the Rankings tab shows all.
-
-## ESPN Worker setup (worker/)
-1. Sign in to ESPN Fantasy on a computer browser, open developer tools > Application (or Storage) > Cookies > espn.com,
-   and copy the values of `espn_s2` and `SWID`.
-2. In Cloudflare (free account): Workers & Pages > Create > Worker. Paste `worker/worker.js`. Deploy.
-   Or use the CLI: `wrangler secret put ESPN_S2`, `wrangler secret put SWID`, `wrangler deploy`.
-3. In the Worker's Settings > Variables: add secrets `ESPN_S2` and `SWID`, plus text vars `LEAGUE_ID` = 1944871 and `ALLOW_ORIGIN` = `*`.
-4. Test in Safari: `YOUR-WORKER-URL/?view=teams&season=2026`, then `?debug=1` if anything looks off.
-5. Put the Worker URL in `espnProxy` in `data/league.json`. The SAMPLE badge disappears and team names fill the Game of the Week.
-Later, set `ALLOW_ORIGIN` to your Pages origin (for example `https://username.github.io`).
+Installable iPhone web app on GitHub Pages, backed by one Cloudflare Worker (`worker/worker.js`).
 
 ## Files you edit
-- `data/league.json`: week number, Game of the Week, team list, ESPN Worker URL.
-- `data/champions.json`: one entry per season (add the new champion at the top).
-Each is separate, so a typo in one can't break the other. The app shows a red bar if a file can't be read.
+- `data/league.json`: season, `seasonStart` (the Tuesday before Week 1), Game of the Week override, ESPN Worker URL.
+- `data/champions.json`: one entry per season.
+- `data/previews.json`: hand-written Game of the Week previews, keyed like `"2026-5"`. They win over the AI preview.
+- `data/commish-thoughts.json`: commissioner notes by trade id (see COMMISH.md).
+- `rankings/`: power ranking images named like `2026-week-05.jpg`.
+Each data file also has a built-in copy in `index.html`, used only if the file can't be found.
 
 ## Releasing an update
-Change `APP_VERSION` in `index.html` (and `VERSION` in `sw.js` to match), commit, and users see an Update banner.
-"Check for updates" in the ESPN tab compares against the version on GitHub and tells you the result.
+Change `APP_VERSION` in `index.html` and `VERSION` in `sw.js` to match, commit, and users see an Update banner.
+Weeks roll over every Tuesday at 8 AM Eastern.
 
-## Where the data files can live
-The app looks for `data/league.json` and `data/champions.json` first, then `league.json` and `champions.json` in the main folder.
-If the app shows a red bar, it lists the exact addresses it tried.
+## Worker setup (Cloudflare)
+- Secrets: `ESPN_S2`, `SWID` (ESPN login cookies), `GEMINI_API_KEY` (aistudio.google.com/apikey).
+- Variables: `LEAGUE_ID` = 1944871, `ALLOW_ORIGIN` = `*` (later your Pages address), optional `GEMINI_MODEL` (default `gemini-2.5-flash`).
+- KV: create a namespace and bind it to the Worker with the variable name `KV`.
+- Checks: `?debug=gemini` tests the AI key. `?debug=tradelog&season=2026&week=5` lists every trade record, the activity feed, and the trades the app shows.
 
-## Transaction checks
-Each phone asks the Worker at most once every 4 hours (about morning, afternoon, evening and night) and remembers the last result.
-The Moves tab has a Refresh now button. To change the timing, edit `TX_TTL` in `index.html`.
+## What the Worker does
+| View | Used for | Notes |
+|---|---|---|
+| `transactions` | Home and League tab lists | adds, drops, waivers, trades |
+| `teams` | team picker, Game of the Week names | |
+| `standings` | standings table, playoff odds, snapshots | odds are computed in the app |
+| `totw` | Team of the Week | best lineup of the last completed week |
+| `gotw` | Game of the Week pick | best combined records |
+| `values` | warms FantasyPros values | own request to keep trades light |
+| `trades` | Trades section | completed trades, grades from FantasyPros values |
+| `tradeai` | trade summary | Gemini, only for trades on screen, saved per trade |
+| `gotwai` | Game of the Week preview | Gemini, only when the preview is opened, saved per week |
+| `snapshot` | rank and odds arrows | one snapshot per week |
 
-## Themes
-Settings > Themes: Dark, Light, Bengals Orange, Bengals Black, Ravens Purple, Ravens Black. Each phone remembers its choice.
+Trade values come only from FantasyPros. If FantasyPros can't be read, trades still list but without grades or AI summaries, and the card says why.
 
-## Week and Game of the Week
-- The week in the header rolls over every Tuesday at 6 AM. Set `seasonStart` in `data/league.json` to the Tuesday before Week 1 each season.
-- Game of the Week is picked by the Worker each week (best combined records, similar scoring breaks ties).
-  To hand-pick one, set `gameOfTheWeek` in `data/league.json` with a matching `week`.
-- Tapping the banner opens a preview. Add your own text to `data/previews.json` under `"season-week"` (for example `"2026-5"`).
-  Without one, the app builds a short preview from records and scoring.
+## KV keys the Worker uses
+`txhist:<season>` (finished weeks of transactions, saved once), `players` (names of every player seen), `fp:<week>:<scoring>` (FantasyPros values, 6 hours),
+`tradectx` (details for AI summaries, newest 40), `ai:trade:<id>:<sig>` and `ai:gotw:<season>:<week>:<a>:<b>` (AI text), `snap:<season>:<week>`.
+Leftovers from older versions that can be deleted in the Cloudflare dashboard (KV > your namespace > View): keys starting with `vote:`, `chart:` and `values:`.
+You can also delete the `ANTHROPIC_API_KEY` secret and any `REDDIT_USER`, `REDDIT_POST` or `CLAUDE_MODEL` variables.
 
-## Built-in data copies
-`index.html` carries copies of the three data files. If a file can't be found the app uses the built-in copy and says so in Settings > About.
-When a file is found in the data folder it always wins, so your edits still take effect.
-
-## League tab
-Power rankings (tap a week chip for earlier ones), Team of the Week (last completed week), standings with playoff odds, and transactions.
-Team of the Week covers every rostered player, started or benched. Free agents are not in the league data, so they can't appear.
-Playoff odds are the app's own simulation, because ESPN does not publish its odds.
-
-## 0.6.0 setup (Cloudflare)
-1. Storage for votes and weekly snapshots: Workers & Pages > KV > Create a namespace (any name). Then open your Worker >
-   Settings > Bindings > Add > KV namespace, variable name `KV`, pick the namespace.
-2. Trade chart: the poster is KyonFantasyFootball (built in). His chart is an image, so Claude reads it once a week and the result is saved in KV.
-   Create an API key at console.anthropic.com (add a few dollars of credit), then Worker > Settings > Variables > Add a secret named `ANTHROPIC_API_KEY`.
-   Optional: `REDDIT_USER` to use a different poster, `REDDIT_POST` for a fallback post id, `CLAUDE_MODEL` to change the model.
-3. Redeploy `worker/worker.js`.
-Checks: `YOUR-WORKER-URL/?debug=fp` (FantasyPros), `?debug=reddit&week=4` (Reddit chart), `?view=values&week=4` (what got blended).
-
-## How trade grades work
-Each player gets a 0-100 value: FantasyPros rest-of-season rank turned into a value, plus the Reddit chart scaled to 0-100, averaged 50/50
-(if one source is down the other is used alone, and the card says so). The Worker picks the newest chart at or before the current week.
-A side's grade compares what it receives with what it sends, with a small depth discount for extra players. The short note uses each roster.
-
-## Snapshots and arrows
-The first phone to open the app each week saves that week's standings and playoff odds. Arrows compare with the previous week's snapshot
-(rank moves, and odds moves of 3 points or more). Playoff odds use a seeded simulation so every phone gets the same numbers.
-
-## 0.7.0 setup
-- AI summaries: create a key at aistudio.google.com/apikey, then Worker > Settings > Variables > Add secret `GEMINI_API_KEY`. Optional `GEMINI_MODEL` (default `gemini-2.5-flash`).
-  Check it at `YOUR-WORKER-URL/?debug=gemini`. Trade summaries are written once per trade and saved in KV. Game of the Week previews are written once per week.
-- Weeks now roll over every Tuesday at 8 AM Eastern. Game of the Week and its AI preview reset with them.
-- Trades show only after they go through. Trades still in the league review period stay hidden.
-- Commissioner notes: see COMMISH.md.
+## Backup
+The version before this cleanup is in `backup-0.7.1/` (outside the site folder).

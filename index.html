@@ -121,11 +121,6 @@ nav button.on{color:var(--ink);border-top-color:var(--accent)}
 .cm p{margin:0 0 6px;font-size:13px;line-height:1.5}
 .cm p:last-of-type{margin-bottom:0}
 .cm small{display:block;color:var(--mute);font-size:11px;margin-top:6px}
-.tr .votes{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}
-.tr .v{background:transparent;border:1px solid var(--line);border-radius:2px;color:var(--ink);padding:6px 0 5px;display:flex;flex-direction:column;align-items:center;gap:1px}
-.tr .v .e{font-size:18px;line-height:1.2}.tr .v .n{font-size:12px;font-variant-numeric:tabular-nums}.tr .v .l{font-size:9px;color:var(--mute)}
-.tr .v.on{border-color:var(--link);box-shadow:inset 0 0 0 1px var(--link)}
-.tr .vn{font-size:11px;color:var(--mute);margin:6px 0 0}
 .season{padding:0;overflow:hidden}
 .season .top{padding:14px 12px;background:var(--head-bg);color:var(--head-ink);border-left:3px solid var(--hi)}
 .season .top .muted{color:var(--head-ink);opacity:.7}
@@ -244,8 +239,9 @@ nav button.on{color:var(--ink);border-top-color:var(--accent)}
 </nav>
 
 <script>
-const APP_VERSION = '0.7.1';
+const APP_VERSION = '0.8.0';
 const CHANGELOG = [
+  ['0.8.0', 'Leaner Worker: trade voting and the Reddit chart removed, trade values from FantasyPros only, AI summaries requested only when shown.'],
   ['0.7.1', 'Trades now match each accepted trade to the right offer, so declined offers no longer show up.'],
   ['0.7.0', 'New editorial design, Gemini AI trade and Game of the Week summaries, grades that weigh each roster, completed trades only, Commish notes, 8 AM Eastern week reset.'],
   ['0.6.2', 'Trades no longer show a phantom third team when a player is dropped to make room.'],
@@ -262,9 +258,8 @@ const CHANGELOG = [
   ['0.1.0', 'First release: rankings, champions corner, history, sample transactions, ESPN launcher, update prompts.']
 ];
 const $ = id => document.getElementById(id);
-let D = null, CH = [], TX = [], TEAMS = [], RK = [], txLive = false, txErr = '', txAt = 0, champYear = null, PREV = {}, GOTW = null, WEEK = 0, MY = null, TRADES = null, VOTES = {}, trAll = false, txAll = false, LASTROWS = [], SNAP_PREV = null, COMMISH = {}, GAI = null, TAI = {}, dataWarn = [];
+let D = null, CH = [], TX = [], TEAMS = [], RK = [], txLive = false, txErr = '', txAt = 0, champYear = null, PREV = {}, GOTW = null, WEEK = 0, MY = null, TRADES = null, trAll = false, txAll = false, LASTROWS = [], SNAP_PREV = null, COMMISH = {}, GAI = null, TAI = {}, dataWarn = [];
 try { MY = JSON.parse(localStorage.getItem('my') || 'null'); if (MY) MY.id = +MY.id; } catch(e){}
-const VOTER = (() => { try { let v = localStorage.getItem('voter'); if (!v){ v = 'v' + Math.random().toString(36).slice(2, 12) + Date.now().toString(36); localStorage.setItem('voter', v); } return v; } catch(e){ return 'anon'; } })();
 const isMine = m => !!MY && m && ((m.id != null && m.id === MY.id) || (m.id == null && m.gm && MY.gm && m.gm.toLowerCase().includes(MY.gm.toLowerCase())));
 
 /* ---------- tabs ---------- */
@@ -330,7 +325,7 @@ async function load(){
   render();
   $('dataNote').textContent = dataNote;
   loadRankings().then(r => { RK = r; renderRankings(); });
-  Promise.all([loadTeams(), loadGotw()]).then(() => { renderGotw(); renderMy(); renderMine(); if (!MY && TEAMS.length && !localStorage.getItem('mySkip')) openPicker(); loadGotwAI(); });
+  Promise.all([loadTeams(), loadGotw()]).then(() => { renderGotw(); renderMy(); renderMine(); if (!MY && TEAMS.length && !localStorage.getItem('mySkip')) openPicker(); });
   loadTx().then(renderTx);
   loadLeague();
   loadTrades();
@@ -588,7 +583,6 @@ function renderStandings(){
 }
 // ----- trades with grades and emoji voting -----
 const GRC = g => ({A:'#4FB583', B:'#9CC46A', C:'#D9A441'}[g && g[0]] || '#E05A4F');
-const EMO = [['🔥','Fire'], ['🤝','Fair'], ['😬','Yikes'], ['🤡','Clown'], ['💀','Robbery']];
 async function loadTrades(force){
   if (!D.espnProxy){ renderTrades(); return; }
   const base = `${D.espnProxy}?season=${D.season}`, wk = Math.max(1, WEEK), key = `tr2-${D.season}-${wk}`;
@@ -596,34 +590,26 @@ async function loadTrades(force){
   TRADES = await cachedJSON(key, `${base}&view=trades&week=${wk}`, TX_TTL, force);
   const m = FM[key] || {};
   $('trNote').textContent = m.ts ? 'Updated ' + new Date(m.ts).toLocaleString([], {weekday:'short', hour:'numeric', minute:'2-digit'}) + (m.stale ? '. Showing saved data because the latest refresh failed: ' + m.err + '.' : '.') : (m.err ? 'Could not load trades: ' + m.err + '.' : '');
-  renderTrades(); loadVotes(); loadTradeAI();
+  renderTrades(); loadTradeAI();
 }
+// AI summaries are requested only for the trades on screen: the latest one, or all of them once expanded.
 async function loadTradeAI(){
-  for (const t of ((TRADES && TRADES.trades) || []).slice(0, 4)){
+  if (!D.espnProxy || (TRADES && TRADES.valuesStatus && TRADES.valuesStatus.available === false)) return;   // no values, so nothing to summarize
+  for (const t of ((TRADES && TRADES.trades) || []).slice(0, trAll ? 12 : 1)){
+    if (TAI[t.id]) continue;
     const j = await cachedJSON(`tai2-${t.id}-${t.sig}`, `${D.espnProxy}?view=tradeai&season=${D.season}&id=${encodeURIComponent(t.id)}&sig=${encodeURIComponent(t.sig || '')}`, 30 * 864e5);
     if (j && j.sides){ TAI[t.id] = j; renderTrades(); }
   }
 }
-async function loadVotes(){
-  if (!D.espnProxy || !TRADES || !(TRADES.trades || []).length) return;
-  try {
-    const j = await (await fetch(`${D.espnProxy}?view=votes&season=${D.season}&voter=${VOTER}&ids=${encodeURIComponent(TRADES.trades.map(t => t.id).join(','))}`)).json();
-    VOTES = j && j.enabled ? {enabled:true, ...j.votes} : {enabled:false};
-  } catch(e){ VOTES = {enabled:false}; }
-  renderTrades();
-}
 function tradeCard(t){
-  const v = VOTES[t.id] || {counts:[0,0,0,0,0], mine:null}, total = v.counts.reduce((a, c) => a + c, 0), ai = TAI[t.id];
+  const ai = TAI[t.id];
   const when = new Date(t.ts).toLocaleDateString([], {weekday:'short', month:'short', day:'numeric'});
   const sum = s => { const x = ai && (ai.sides || []).find(y => +y.teamId === +s.teamId); return (x && x.summary) || s.note || ''; };
   const sides = t.sides.map(s => `<div class="side${isMine(s) ? ' me' : ''}"><div class="hd"><div><div class="gm">${esc(s.gm || s.team)}</div><div class="tm">${esc(s.team)}${s.record ? ' &middot; ' + esc(s.record) : ''}</div></div><div class="gr" style="color:${GRC(s.grade)};border-color:${GRC(s.grade)}">${esc(s.grade || '-')}</div></div><div class="gets">Gets</div>${s.gets.map(p => `<div class="pl"><div>${esc(p.name)}<small>${esc([p.pos, p.nfl, p.rk].filter(Boolean).join(' · '))}</small></div><span>${p.v == null ? '-' : p.v.toFixed(1)}</span></div>`).join('')}<div class="tot"><span>Total value</span><span>${s.total == null ? '-' : s.total.toFixed(1)}</span></div>${s.drops && s.drops.length ? `<p class="drop">Dropped to make room: ${esc(s.drops.map(d => d.name).join(', '))}</p>` : ''}<p class="sum">${esc(sum(s))}</p></div>`).join('');
   const verdict = (ai && ai.verdict) || t.verdict;
   const c = COMMISH[t.id];
   const commish = c ? `<div class="cm"><b>Commish's Thoughts</b>${c.commentary.split(/\n\s*\n/).map(p => `<p>${esc(p)}</p>`).join('')}${c.updatedAt ? `<small>${esc(c.updatedAt)}</small>` : ''}</div>` : '';
-  const votes = VOTES.enabled
-    ? `<div class="votes">${EMO.map((e, i) => `<button class="v${v.mine === i ? ' on' : ''}" data-t="${esc(t.id)}" data-i="${i}"><span class="e">${e[0]}</span><span class="n">${v.counts[i]}</span><span class="l">${e[1]}</span></button>`).join('')}</div><p class="vn">${total} vote${total === 1 ? '' : 's'}. ${v.mine === null ? 'Tap to rate this trade.' : 'Tap again to change or clear your vote.'}</p>`
-    : '<p class="vn">Voting turns on once the Worker has storage set up.</p>';
-  return `<div class="card tr"><div class="top"><span>${when}<span class="tid">#${esc(String(t.id).slice(0, 6))}</span></span><span class="tag TRADE">TRADE</span></div><div class="sides">${sides}</div>${verdict ? `<p class="why">${esc(verdict)}</p>` : ''}${commish}<p class="src">${esc(TRADES.source || '')} Grades weigh each team's starting lineup.${ai ? ' Summary by Gemini AI.' : ''}</p>${votes}</div>`;
+  return `<div class="card tr"><div class="top"><span>${when}<span class="tid">#${esc(String(t.id).slice(0, 6))}</span></span><span class="tag TRADE">TRADE</span></div><div class="sides">${sides}</div>${verdict ? `<p class="why">${esc(verdict)}</p>` : ''}${commish}<p class="src">${esc(TRADES.source || '')}${TRADES.valuesStatus && TRADES.valuesStatus.available === false ? '' : " Grades weigh each team's starting lineup."}${ai ? ' Summary by Gemini AI.' : ''}</p></div>`;
 }
 function renderTrades(){
   const el = $('trades'), more = $('trMore');
@@ -634,19 +620,7 @@ function renderTrades(){
   more.style.display = list.length > 1 ? '' : 'none';
   more.textContent = trAll ? 'Show only the latest trade' : `See ${list.length - 1} earlier trade${list.length > 2 ? 's' : ''}`;
 }
-$('trMore').onclick = () => { trAll = !trAll; renderTrades(); };
-$('trades').addEventListener('click', async e => {
-  const b = e.target.closest('.v'); if (!b || !VOTES.enabled) return;
-  const id = b.dataset.t, i = +b.dataset.i, cur = VOTES[id] || {counts:[0,0,0,0,0], mine:null};
-  const next = {counts: cur.counts.slice(), mine: cur.mine};
-  if (next.mine !== null) next.counts[next.mine]--;
-  if (next.mine === i) next.mine = null; else { next.mine = i; next.counts[i]++; }
-  VOTES[id] = next; renderTrades();
-  try {
-    const j = await (await fetch(`${D.espnProxy}?view=vote&season=${D.season}`, {method:'POST', headers:{'Content-Type':'text/plain'}, body:JSON.stringify({trade:id, voter:VOTER, choice:next.mine})})).json();
-    if (j && j.counts){ VOTES[id] = {counts:j.counts, mine:j.mine}; renderTrades(); }
-  } catch(e){}
-});
+$('trMore').onclick = () => { trAll = !trAll; renderTrades(); loadTradeAI(); };
 // ----- my team -----
 function setMy(t){
   MY = t ? {id:+t.id, team:t.name || t.team, gm:t.owner || t.gm} : null;
